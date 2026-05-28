@@ -54,7 +54,7 @@ public:
 
         // 在编辑模式注册 RightPanePlaceHolder，确保右侧面板可用
         // 仅在切换到编辑模式时面板才关联到 RightPaneWidget
-        new RightPanePlaceHolder(Constants::MODE_EDIT);
+        new RightPanePlaceHolder(Core::Constants::MODE_EDIT);
 
         // 注册工具菜单项
         ActionContainer *toolsMenu = ActionManager::actionContainer(Core::Constants::M_TOOLS);
