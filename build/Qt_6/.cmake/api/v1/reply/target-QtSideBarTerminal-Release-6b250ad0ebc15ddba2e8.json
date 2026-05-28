@@ -1,0 +1,843 @@
+{
+	"artifacts" : 
+	[
+		{
+			"path" : "lib/qtcreator/plugins/Release/QtSideBarTerminal.dll"
+		},
+		{
+			"path" : "lib/qtcreator/plugins/Release/QtSideBarTerminal.lib"
+		},
+		{
+			"path" : "lib/qtcreator/plugins/Release/QtSideBarTerminal.pdb"
+		}
+	],
+	"backtrace" : 2,
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"add_library",
+			"add_qtc_plugin",
+			"install",
+			"target_link_libraries",
+			"add_qtc_depends",
+			"extend_qtc_target",
+			"set_target_properties",
+			"include",
+			"find_package",
+			"find_dependency",
+			"_qt_internal_find_qt_dependencies",
+			"target_compile_definitions",
+			"target_include_directories"
+		],
+		"files" : 
+		[
+			"H:/Qt/Qt6/Tools/QtCreator/lib/cmake/QtCreator/QtCreatorAPI.cmake",
+			"CMakeLists.txt",
+			"H:/Qt/Qt6/Tools/QtCreator/lib/cmake/QtCreator/QtCreatorAPIInternal.cmake",
+			"H:/Qt/Qt6/Tools/QtCreator/lib/cmake/QtCreator/QtCreatorTargets.cmake",
+			"H:/Qt/Qt6/Tools/QtCreator/lib/cmake/QtCreator/QtCreatorConfig.cmake",
+			"build/Qt_6/.qtcreator/cmake-helper/maintenance_tool_provider.cmake",
+			"H:/Qt/Qt6/6.10.3/msvc2022_64/lib/cmake/Qt6PrintSupport/Qt6PrintSupportTargets.cmake",
+			"H:/Qt/Qt6/6.10.3/msvc2022_64/lib/cmake/Qt6PrintSupport/Qt6PrintSupportConfig.cmake",
+			"C:/Program Files/CMake/share/cmake-3.30/Modules/CMakeFindDependencyMacro.cmake",
+			"H:/Qt/Qt6/6.10.3/msvc2022_64/lib/cmake/Qt6Network/Qt6NetworkTargets.cmake",
+			"H:/Qt/Qt6/6.10.3/msvc2022_64/lib/cmake/Qt6Network/Qt6NetworkConfig.cmake",
+			"H:/Qt/Qt6/6.10.3/msvc2022_64/lib/cmake/Qt6Widgets/Qt6WidgetsTargets.cmake",
+			"H:/Qt/Qt6/6.10.3/msvc2022_64/lib/cmake/Qt6Widgets/Qt6WidgetsConfig.cmake",
+			"H:/Qt/Qt6/6.10.3/msvc2022_64/lib/cmake/Qt6Gui/Qt6GuiTargets.cmake",
+			"H:/Qt/Qt6/6.10.3/msvc2022_64/lib/cmake/Qt6Gui/Qt6GuiConfig.cmake",
+			"H:/Qt/Qt6/6.10.3/msvc2022_64/lib/cmake/Qt6Core/Qt6CoreTargets.cmake",
+			"H:/Qt/Qt6/6.10.3/msvc2022_64/lib/cmake/Qt6Core/Qt6CoreConfig.cmake",
+			"H:/Qt/Qt6/6.10.3/msvc2022_64/lib/cmake/Qt6/QtPublicDependencyHelpers.cmake",
+			"H:/Qt/Qt6/6.10.3/msvc2022_64/lib/cmake/Qt6Concurrent/Qt6ConcurrentDependencies.cmake",
+			"H:/Qt/Qt6/6.10.3/msvc2022_64/lib/cmake/Qt6Concurrent/Qt6ConcurrentConfig.cmake"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 1
+			},
+			{
+				"command" : 1,
+				"file" : 1,
+				"line" : 35,
+				"parent" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 617,
+				"parent" : 1
+			},
+			{
+				"command" : 2,
+				"file" : 0,
+				"line" : 734,
+				"parent" : 1
+			},
+			{
+				"command" : 5,
+				"file" : 0,
+				"line" : 647,
+				"parent" : 1
+			},
+			{
+				"command" : 4,
+				"file" : 2,
+				"line" : 499,
+				"parent" : 4
+			},
+			{
+				"command" : 3,
+				"file" : 2,
+				"line" : 321,
+				"parent" : 5
+			},
+			{
+				"command" : 8,
+				"file" : 1,
+				"line" : 15,
+				"parent" : 0
+			},
+			{
+				"command" : 8,
+				"file" : 5,
+				"line" : 259,
+				"parent" : 7
+			},
+			{
+				"file" : 4,
+				"parent" : 8
+			},
+			{
+				"command" : 7,
+				"file" : 4,
+				"line" : 54,
+				"parent" : 9
+			},
+			{
+				"file" : 3,
+				"parent" : 10
+			},
+			{
+				"command" : 6,
+				"file" : 3,
+				"line" : 451,
+				"parent" : 11
+			},
+			{
+				"command" : 6,
+				"file" : 3,
+				"line" : 711,
+				"parent" : 11
+			},
+			{
+				"command" : 9,
+				"file" : 4,
+				"line" : 27,
+				"parent" : 9
+			},
+			{
+				"command" : 8,
+				"file" : 8,
+				"line" : 76,
+				"parent" : 14
+			},
+			{
+				"command" : 8,
+				"file" : 5,
+				"line" : 234,
+				"parent" : 15
+			},
+			{
+				"file" : 7,
+				"parent" : 16
+			},
+			{
+				"command" : 7,
+				"file" : 7,
+				"line" : 52,
+				"parent" : 17
+			},
+			{
+				"file" : 6,
+				"parent" : 18
+			},
+			{
+				"command" : 6,
+				"file" : 6,
+				"line" : 61,
+				"parent" : 19
+			},
+			{
+				"command" : 6,
+				"file" : 3,
+				"line" : 906,
+				"parent" : 11
+			},
+			{
+				"command" : 8,
+				"file" : 5,
+				"line" : 234,
+				"parent" : 15
+			},
+			{
+				"file" : 10,
+				"parent" : 22
+			},
+			{
+				"command" : 7,
+				"file" : 10,
+				"line" : 52,
+				"parent" : 23
+			},
+			{
+				"file" : 9,
+				"parent" : 24
+			},
+			{
+				"command" : 6,
+				"file" : 9,
+				"line" : 61,
+				"parent" : 25
+			},
+			{
+				"command" : 8,
+				"file" : 5,
+				"line" : 234,
+				"parent" : 15
+			},
+			{
+				"file" : 12,
+				"parent" : 27
+			},
+			{
+				"command" : 7,
+				"file" : 12,
+				"line" : 52,
+				"parent" : 28
+			},
+			{
+				"file" : 11,
+				"parent" : 29
+			},
+			{
+				"command" : 6,
+				"file" : 11,
+				"line" : 61,
+				"parent" : 30
+			},
+			{
+				"command" : 8,
+				"file" : 5,
+				"line" : 234,
+				"parent" : 15
+			},
+			{
+				"file" : 14,
+				"parent" : 32
+			},
+			{
+				"command" : 7,
+				"file" : 14,
+				"line" : 52,
+				"parent" : 33
+			},
+			{
+				"file" : 13,
+				"parent" : 34
+			},
+			{
+				"command" : 6,
+				"file" : 13,
+				"line" : 61,
+				"parent" : 35
+			},
+			{
+				"command" : 8,
+				"file" : 5,
+				"line" : 234,
+				"parent" : 15
+			},
+			{
+				"file" : 19,
+				"parent" : 37
+			},
+			{
+				"command" : 7,
+				"file" : 19,
+				"line" : 40,
+				"parent" : 38
+			},
+			{
+				"file" : 18,
+				"parent" : 39
+			},
+			{
+				"command" : 10,
+				"file" : 18,
+				"line" : 50,
+				"parent" : 40
+			},
+			{
+				"command" : 9,
+				"file" : 17,
+				"line" : 142,
+				"parent" : 41
+			},
+			{
+				"command" : 8,
+				"file" : 8,
+				"line" : 76,
+				"parent" : 42
+			},
+			{
+				"command" : 8,
+				"file" : 5,
+				"line" : 252,
+				"parent" : 43
+			},
+			{
+				"file" : 16,
+				"parent" : 44
+			},
+			{
+				"command" : 7,
+				"file" : 16,
+				"line" : 54,
+				"parent" : 45
+			},
+			{
+				"file" : 15,
+				"parent" : 46
+			},
+			{
+				"command" : 6,
+				"file" : 15,
+				"line" : 61,
+				"parent" : 47
+			},
+			{
+				"command" : 5,
+				"file" : 0,
+				"line" : 667,
+				"parent" : 1
+			},
+			{
+				"command" : 11,
+				"file" : 2,
+				"line" : 503,
+				"parent" : 49
+			},
+			{
+				"command" : 11,
+				"file" : 2,
+				"line" : 503,
+				"parent" : 4
+			},
+			{
+				"command" : 12,
+				"file" : 0,
+				"line" : 672,
+				"parent" : 1
+			}
+		]
+	},
+	"compileGroups" : 
+	[
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : "/DWIN32 /D_WINDOWS /GR /EHsc /O2 /Ob2 /DNDEBUG -std:c++20 -MD"
+				},
+				{
+					"backtrace" : 6,
+					"fragment" : "-Zc:__cplusplus"
+				},
+				{
+					"backtrace" : 6,
+					"fragment" : "-permissive-"
+				},
+				{
+					"backtrace" : 6,
+					"fragment" : "-utf-8"
+				},
+				{
+					"backtrace" : 6,
+					"fragment" : "/wd5030"
+				}
+			],
+			"defines" : 
+			[
+				{
+					"backtrace" : 6,
+					"define" : "EXTENSIONSYSTEM_WITH_TESTOPTION"
+				},
+				{
+					"backtrace" : 6,
+					"define" : "NANOTRACE_ENABLED"
+				},
+				{
+					"backtrace" : 50,
+					"define" : "QTSIDEBARTERMINAL_LIBRARY"
+				},
+				{
+					"backtrace" : 6,
+					"define" : "QT_CONCURRENT_LIB"
+				},
+				{
+					"backtrace" : 6,
+					"define" : "QT_CORE_LIB"
+				},
+				{
+					"backtrace" : 51,
+					"define" : "QT_CREATOR"
+				},
+				{
+					"backtrace" : 51,
+					"define" : "QT_DISABLE_DEPRECATED_UP_TO=0x050900"
+				},
+				{
+					"backtrace" : 6,
+					"define" : "QT_GUI_LIB"
+				},
+				{
+					"backtrace" : 6,
+					"define" : "QT_NETWORK_LIB"
+				},
+				{
+					"backtrace" : 51,
+					"define" : "QT_NO_CAST_TO_ASCII"
+				},
+				{
+					"backtrace" : 6,
+					"define" : "QT_NO_DEBUG"
+				},
+				{
+					"backtrace" : 51,
+					"define" : "QT_NO_FOREACH"
+				},
+				{
+					"backtrace" : 51,
+					"define" : "QT_NO_JAVA_STYLE_ITERATORS"
+				},
+				{
+					"backtrace" : 6,
+					"define" : "QT_PRINTSUPPORT_LIB"
+				},
+				{
+					"backtrace" : 51,
+					"define" : "QT_RESTRICTED_CAST_FROM_ASCII"
+				},
+				{
+					"backtrace" : 51,
+					"define" : "QT_USE_QSTRINGBUILDER"
+				},
+				{
+					"backtrace" : 51,
+					"define" : "QT_WARN_DEPRECATED_UP_TO=0x060400"
+				},
+				{
+					"backtrace" : 6,
+					"define" : "QT_WIDGETS_LIB"
+				},
+				{
+					"define" : "QtSideBarTerminal_EXPORTS"
+				},
+				{
+					"backtrace" : 51,
+					"define" : "RELATIVE_DATA_PATH=\"../share/qtcreator\""
+				},
+				{
+					"backtrace" : 51,
+					"define" : "RELATIVE_DOC_PATH=\"../share/doc/qtcreator\""
+				},
+				{
+					"backtrace" : 51,
+					"define" : "RELATIVE_LIBEXEC_PATH=\"\""
+				},
+				{
+					"backtrace" : 51,
+					"define" : "RELATIVE_PLUGIN_PATH=\"../lib/qtcreator/plugins\""
+				},
+				{
+					"backtrace" : 51,
+					"define" : "UNICODE"
+				},
+				{
+					"backtrace" : 6,
+					"define" : "WIN32"
+				},
+				{
+					"backtrace" : 51,
+					"define" : "WIN32_LEAN_AND_MEAN"
+				},
+				{
+					"backtrace" : 6,
+					"define" : "WIN64"
+				},
+				{
+					"backtrace" : 51,
+					"define" : "WINVER=0x0A00"
+				},
+				{
+					"backtrace" : 51,
+					"define" : "_CRT_SECURE_NO_WARNINGS"
+				},
+				{
+					"backtrace" : 6,
+					"define" : "_ENABLE_EXTENDED_ALIGNED_STORAGE"
+				},
+				{
+					"backtrace" : 6,
+					"define" : "_SCL_SECURE_NO_WARNINGS"
+				},
+				{
+					"backtrace" : 51,
+					"define" : "_UNICODE"
+				},
+				{
+					"backtrace" : 51,
+					"define" : "_WIN32_WINNT=0x0A00"
+				},
+				{
+					"backtrace" : 6,
+					"define" : "_WIN64"
+				}
+			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 0,
+					"path" : "D:/SourceCode/Components_Projects/QtSideBarTerminal/build/Qt_6/QtSideBarTerminal_autogen/include_Release"
+				},
+				{
+					"backtrace" : 52,
+					"path" : "D:/SourceCode/Components_Projects/QtSideBarTerminal/build/Qt_6"
+				},
+				{
+					"backtrace" : 52,
+					"path" : "D:/SourceCode/Components_Projects/QtSideBarTerminal/build/Qt_6/src"
+				},
+				{
+					"backtrace" : 52,
+					"path" : "D:/SourceCode/Components_Projects/QtSideBarTerminal"
+				},
+				{
+					"backtrace" : 52,
+					"path" : "D:/SourceCode/Components_Projects"
+				},
+				{
+					"backtrace" : 6,
+					"isSystem" : true,
+					"path" : "H:/Qt/Qt6/6.10.3/msvc2022_64/include/QtWidgets"
+				},
+				{
+					"backtrace" : 6,
+					"isSystem" : true,
+					"path" : "H:/Qt/Qt6/6.10.3/msvc2022_64/include"
+				},
+				{
+					"backtrace" : 6,
+					"isSystem" : true,
+					"path" : "H:/Qt/Qt6/6.10.3/msvc2022_64/include/QtCore"
+				},
+				{
+					"backtrace" : 6,
+					"isSystem" : true,
+					"path" : "H:/Qt/Qt6/6.10.3/msvc2022_64/mkspecs/win32-msvc"
+				},
+				{
+					"backtrace" : 6,
+					"isSystem" : true,
+					"path" : "H:/Qt/Qt6/6.10.3/msvc2022_64/include/QtGui"
+				},
+				{
+					"backtrace" : 6,
+					"isSystem" : true,
+					"path" : "H:/Qt/Qt6/Tools/QtCreator/include/qtcreator/src/libs"
+				},
+				{
+					"backtrace" : 6,
+					"isSystem" : true,
+					"path" : "H:/Qt/Qt6/Tools/QtCreator/include/qtcreator/src/libs/utils/mimetypes2"
+				},
+				{
+					"backtrace" : 6,
+					"isSystem" : true,
+					"path" : "H:/Qt/Qt6/Tools/QtCreator/include/qtcreator/src/libs/utils/plaintextedit"
+				},
+				{
+					"backtrace" : 6,
+					"isSystem" : true,
+					"path" : "H:/Qt/Qt6/6.10.3/msvc2022_64/include/QtConcurrent"
+				},
+				{
+					"backtrace" : 6,
+					"isSystem" : true,
+					"path" : "H:/Qt/Qt6/6.10.3/msvc2022_64/include/QtNetwork"
+				},
+				{
+					"backtrace" : 6,
+					"isSystem" : true,
+					"path" : "H:/Qt/Qt6/6.10.3/msvc2022_64/include/QtPrintSupport"
+				},
+				{
+					"backtrace" : 6,
+					"isSystem" : true,
+					"path" : "H:/Qt/Qt6/Tools/QtCreator/include/qtcreator/src/libs/QtTaskTree"
+				},
+				{
+					"backtrace" : 6,
+					"isSystem" : true,
+					"path" : "H:/Qt/Qt6/Tools/QtCreator/include/qtcreator/src/plugins"
+				}
+			],
+			"language" : "CXX",
+			"languageStandard" : 
+			{
+				"backtraces" : 
+				[
+					6,
+					6
+				],
+				"standard" : "20"
+			},
+			"sourceIndexes" : 
+			[
+				0,
+				4
+			]
+		}
+	],
+	"dependencies" : 
+	[
+		{
+			"id" : "ZERO_CHECK::@6890427a1f51a3e7e1df"
+		}
+	],
+	"id" : "QtSideBarTerminal::@6890427a1f51a3e7e1df",
+	"install" : 
+	{
+		"destinations" : 
+		[
+			{
+				"backtrace" : 3,
+				"path" : "lib/qtcreator/plugins"
+			},
+			{
+				"backtrace" : 3,
+				"path" : "lib/qtcreator/plugins"
+			}
+		],
+		"prefix" : 
+		{
+			"path" : "C:/Program Files (x86)/QtSideBarTerminal"
+		}
+	},
+	"link" : 
+	{
+		"commandFragments" : 
+		[
+			{
+				"fragment" : "/machine:x64 /INCREMENTAL:NO",
+				"role" : "flags"
+			},
+			{
+				"backtrace" : 6,
+				"fragment" : "H:\\Qt\\Qt6\\Tools\\QtCreator\\lib\\qtcreator\\plugins\\Core.lib",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 6,
+				"fragment" : "H:\\Qt\\Qt6\\Tools\\QtCreator\\bin\\ExtensionSystem.lib",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 6,
+				"fragment" : "H:\\Qt\\Qt6\\Tools\\QtCreator\\bin\\Utils.lib",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 12,
+				"fragment" : "H:\\Qt\\Qt6\\Tools\\QtCreator\\bin\\Nanotrace.lib",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 13,
+				"fragment" : "H:\\Qt\\Qt6\\Tools\\QtCreator\\bin\\QtTaskTree.lib",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 13,
+				"fragment" : "H:\\Qt\\Qt6\\6.10.3\\msvc2022_64\\lib\\Qt6Concurrent.lib",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 13,
+				"fragment" : "H:\\Qt\\Qt6\\6.10.3\\msvc2022_64\\lib\\Qt6PrintSupport.lib",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 20,
+				"fragment" : "comdlg32.lib",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 20,
+				"fragment" : "winspool.lib",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 21,
+				"fragment" : "H:\\Qt\\Qt6\\Tools\\QtCreator\\bin\\Aggregation.lib",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 13,
+				"fragment" : "H:\\Qt\\Qt6\\6.10.3\\msvc2022_64\\lib\\Qt6Network.lib",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 26,
+				"fragment" : "ws2_32.lib",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 6,
+				"fragment" : "H:\\Qt\\Qt6\\6.10.3\\msvc2022_64\\lib\\Qt6Widgets.lib",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 31,
+				"fragment" : "H:\\Qt\\Qt6\\6.10.3\\msvc2022_64\\lib\\Qt6Gui.lib",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 36,
+				"fragment" : "d3d11.lib",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 36,
+				"fragment" : "dxgi.lib",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 36,
+				"fragment" : "dxguid.lib",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 36,
+				"fragment" : "d3d12.lib",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 31,
+				"fragment" : "H:\\Qt\\Qt6\\6.10.3\\msvc2022_64\\lib\\Qt6Core.lib",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 48,
+				"fragment" : "mpr.lib",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 48,
+				"fragment" : "userenv.lib",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib",
+				"role" : "libraries"
+			}
+		],
+		"language" : "CXX"
+	},
+	"name" : "QtSideBarTerminal",
+	"nameOnDisk" : "QtSideBarTerminal.dll",
+	"paths" : 
+	{
+		"build" : ".",
+		"source" : "."
+	},
+	"sourceGroups" : 
+	[
+		{
+			"name" : "Source Files",
+			"sourceIndexes" : 
+			[
+				0,
+				4
+			]
+		},
+		{
+			"name" : "",
+			"sourceIndexes" : 
+			[
+				1,
+				2,
+				3
+			]
+		},
+		{
+			"name" : "Header Files",
+			"sourceIndexes" : 
+			[
+				5,
+				6,
+				7
+			]
+		}
+	],
+	"sources" : 
+	[
+		{
+			"backtrace" : 0,
+			"compileGroupIndex" : 0,
+			"isGenerated" : true,
+			"path" : "build/Qt_6/QtSideBarTerminal_autogen/mocs_compilation_Release.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 2,
+			"path" : ".github/workflows/build_cmake.yml",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 2,
+			"path" : ".github/workflows/README.md",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 2,
+			"path" : "README.md",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 2,
+			"compileGroupIndex" : 0,
+			"path" : "qtsidebarterminal.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 2,
+			"path" : "qtsidebarterminalconstants.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 2,
+			"path" : "qtsidebarterminaltr.h",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 2,
+			"path" : "QtSideBarTerminal.json.in",
+			"sourceGroupIndex" : 2
+		}
+	],
+	"type" : "SHARED_LIBRARY"
+}

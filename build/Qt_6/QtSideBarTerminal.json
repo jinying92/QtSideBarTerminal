@@ -1,0 +1,17 @@
+{
+    "Id" : "qtsidebarterminal",
+    "Name" : "SideBarTerminal",
+    "Version" : "0.1.0",
+    "CompatVersion" : "0.1.0",
+    "Vendor" : "QtSideBarTerminal",
+    "VendorId" : "qtsidebarterminal",
+    "Copyright" : "(C) 2024 QtSideBarTerminal",
+    "License" : "MIT",
+    "Description" : "在 Qt Creator 右侧面板嵌入一个独立终端 Widget，支持默认 Shell 自动启动",
+    "Url" : "",
+    "DocumentationUrl" : "",
+    "Dependencies" : [
+        { "Id" : "core", "Version" : "19.0.2" },
+        { "Id" : "terminal", "Version" : "19.0.2" }
+    ]
+}

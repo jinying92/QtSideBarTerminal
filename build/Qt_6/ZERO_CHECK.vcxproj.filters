@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="D:\SourceCode\Components_Projects\QtSideBarTerminal\build\Qt_6\CMakeFiles\c81e6a0630b07a8146bbfe0b338af69e\generate.stamp.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{26804159-6ABA-3C14-8832-CF1EDE9A43D3}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,124 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install",
+			"qtc_add_public_header",
+			"set_public_headers",
+			"add_qtc_plugin"
+		],
+		"files" : 
+		[
+			"H:/Qt/Qt6/Tools/QtCreator/lib/cmake/QtCreator/QtCreatorAPI.cmake",
+			"H:/Qt/Qt6/Tools/QtCreator/lib/cmake/QtCreator/QtCreatorAPIInternal.cmake",
+			"CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 2
+			},
+			{
+				"command" : 3,
+				"file" : 2,
+				"line" : 35,
+				"parent" : 0
+			},
+			{
+				"command" : 2,
+				"file" : 0,
+				"line" : 620,
+				"parent" : 1
+			},
+			{
+				"command" : 1,
+				"file" : 1,
+				"line" : 235,
+				"parent" : 2
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 1383,
+				"parent" : 3
+			},
+			{
+				"command" : 1,
+				"file" : 1,
+				"line" : 235,
+				"parent" : 2
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 1383,
+				"parent" : 5
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 734,
+				"parent" : 1
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 4,
+			"component" : "Devel",
+			"destination" : "include/qtcreator",
+			"isExcludeFromAll" : true,
+			"paths" : 
+			[
+				"qtsidebarterminalconstants.h"
+			],
+			"type" : "file"
+		},
+		{
+			"backtrace" : 6,
+			"component" : "Devel",
+			"destination" : "include/qtcreator",
+			"isExcludeFromAll" : true,
+			"paths" : 
+			[
+				"qtsidebarterminaltr.h"
+			],
+			"type" : "file"
+		},
+		{
+			"backtrace" : 7,
+			"component" : "Devel",
+			"destination" : "lib/qtcreator/plugins",
+			"isExcludeFromAll" : true,
+			"isOptional" : true,
+			"paths" : 
+			[
+				"lib/qtcreator/plugins/Release/QtSideBarTerminal.lib"
+			],
+			"targetId" : "QtSideBarTerminal::@6890427a1f51a3e7e1df",
+			"targetIndex" : 1,
+			"targetIsImportLibrary" : true,
+			"type" : "target"
+		},
+		{
+			"backtrace" : 7,
+			"component" : "Unspecified",
+			"destination" : "lib/qtcreator/plugins",
+			"isOptional" : true,
+			"paths" : 
+			[
+				"lib/qtcreator/plugins/Release/QtSideBarTerminal.dll"
+			],
+			"targetId" : "QtSideBarTerminal::@6890427a1f51a3e7e1df",
+			"targetIndex" : 1,
+			"type" : "target"
+		}
+	],
+	"paths" : 
+	{
+		"build" : ".",
+		"source" : "."
+	}
+}

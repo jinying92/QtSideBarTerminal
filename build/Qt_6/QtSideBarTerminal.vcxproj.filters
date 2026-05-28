@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="D:\SourceCode\Components_Projects\QtSideBarTerminal\build\Qt_6\QtSideBarTerminal_autogen\mocs_compilation_Debug.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SourceCode\Components_Projects\QtSideBarTerminal\build\Qt_6\QtSideBarTerminal_autogen\mocs_compilation_Release.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SourceCode\Components_Projects\QtSideBarTerminal\build\Qt_6\QtSideBarTerminal_autogen\mocs_compilation_MinSizeRel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SourceCode\Components_Projects\QtSideBarTerminal\build\Qt_6\QtSideBarTerminal_autogen\mocs_compilation_RelWithDebInfo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="D:\SourceCode\Components_Projects\QtSideBarTerminal\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{CD51EDBC-22E4-3F1A-BB33-49A7E7894529}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
