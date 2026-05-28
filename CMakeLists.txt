@@ -47,6 +47,15 @@ add_qtc_plugin(QtSideBarTerminal
     qtsidebarterminaltr.h
 )
 
+# 将 QtSideBarTerminal.json 拷贝到插件输出目录（与 .dll/.so 同级）
+# Qt Creator 加载插件时需要 JSON 元数据文件与二进制文件在同一目录
+add_custom_command(TARGET QtSideBarTerminal POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${CMAKE_CURRENT_BINARY_DIR}/QtSideBarTerminal.json"
+        "$<TARGET_FILE_DIR:QtSideBarTerminal>"
+    COMMENT "Copy QtSideBarTerminal.json to plugin directory"
+)
+
 # Enable the Run button in Qt Creator
 get_target_property(QtCreatorCorePath QtCreator::Core LOCATION)
 find_program(QtCreatorExecutable
