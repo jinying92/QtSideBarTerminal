@@ -14,9 +14,6 @@
 #include <QDir>
 #include <QProcess>
 
-using namespace Core;
-using namespace Terminal;
-
 namespace QtSideBarTerminal::Internal {
 
 SideBarTerminal::SideBarTerminal(QObject *parent)
@@ -31,8 +28,8 @@ SideBarTerminal::~SideBarTerminal()
 
 bool SideBarTerminal::isTerminalVisible() const
 {
-    return RightPaneWidget::instance()->isShown()
-           && RightPaneWidget::instance()->widget() == m_terminal;
+    return Core::RightPaneWidget::instance()->isShown()
+           && Core::RightPaneWidget::instance()->widget() == m_terminal;
 }
 
 /**
@@ -45,7 +42,7 @@ void SideBarTerminal::toggleTerminal()
 {
     if (!m_isCreated) {
         createTerminal();
-        RightPaneWidget::instance()->setShown(true);
+        Core::RightPaneWidget::instance()->setShown(true);
         return;
     }
 
@@ -53,14 +50,14 @@ void SideBarTerminal::toggleTerminal()
     if (m_terminal && m_terminal->processState() != QProcess::Running) {
         destroyTerminal();
         createTerminal();
-        RightPaneWidget::instance()->setShown(true);
+        Core::RightPaneWidget::instance()->setShown(true);
         return;
     }
 
     // 切换面板可见性
-    bool visible = RightPaneWidget::instance()->isShown()
-                   && RightPaneWidget::instance()->widget() == m_terminal;
-    RightPaneWidget::instance()->setShown(!visible);
+    bool visible = Core::RightPaneWidget::instance()->isShown()
+                   && Core::RightPaneWidget::instance()->widget() == m_terminal;
+    Core::RightPaneWidget::instance()->setShown(!visible);
 }
 
 /**
@@ -99,13 +96,13 @@ void SideBarTerminal::createTerminal()
     QObject::connect(m_terminal, &Terminal::TerminalWidget::finished,
                      this, [this](int exitCode) {
         Q_UNUSED(exitCode)
-        if (RightPaneWidget::instance()->isShown()) {
-            RightPaneWidget::instance()->setShown(false);
+        if (Core::RightPaneWidget::instance()->isShown()) {
+            Core::RightPaneWidget::instance()->setShown(false);
         }
     });
 
     // 嵌入到 Qt Creator 右侧面板
-    RightPaneWidget::instance()->setWidget(m_terminal);
+    Core::RightPaneWidget::instance()->setWidget(m_terminal);
     m_isCreated = true;
 }
 
