@@ -12,7 +12,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-find_package(QtCreator REQUIRED COMPONENTS Core)
+find_package(QtCreator REQUIRED COMPONENTS Core Terminal)
 find_package(Qt6 COMPONENTS Widgets REQUIRED)
 
 # Add a CMake option that enables building your plugin with tests.
@@ -40,6 +40,7 @@ add_qtc_plugin(QtSideBarTerminal
     Qt::Widgets
     QtCreator::ExtensionSystem
     QtCreator::Utils
+    QtCreator::Terminal
   SOURCES
     qtsidebarterminal.cpp
     sidebarterminal.h sidebarterminal.cpp
