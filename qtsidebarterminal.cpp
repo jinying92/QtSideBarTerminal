@@ -22,13 +22,13 @@ namespace QtSideBarTerminal::Internal {
 /**
  * @brief QtSideBarTerminalPlugin - Qt Creator 侧边栏终端插件
  *
- * 将终端(TerminalWidget)嵌入到 Qt Creator 右侧面板(RightPaneWidget)中，
+ * 将终端(SimpleTerminalWidget)通过 QDockWidget 停靠在 Qt Creator 右侧，
  * 实现"打开 -> 使用 -> 关闭"的最简单终端交互。
  *
  * 生命周期：
- *   initialize()          — 创建 SideBarTerminal，注册 RightPanePlaceHolder 和菜单
- *   extensionsInitialized() — 所有依赖插件就绪（无需额外操作）
- *   aboutToShutdown()     — 销毁终端，清理资源
+ *   initialize()              — 创建 SideBarTerminal，注册菜单
+ *   extensionsInitialized()   — 所有依赖插件就绪（无需额外操作）
+ *   aboutToShutdown()         — 销毁终端，清理资源
  */
 class QtSideBarTerminalPlugin final : public ExtensionSystem::IPlugin
 {
@@ -52,8 +52,6 @@ public:
         m_sidebarTerminal = new SideBarTerminal(this);
 
         // 注册工具菜单项
-        ActionContainer *toolsMenu = ActionManager::actionContainer(Core::Constants::M_TOOLS);
-
         ActionBuilder(this, Constants::TOGGLE_ACTION_ID)
             .setText(Tr::tr("Toggle Sidebar Terminal"))
             .setDefaultKeySequence(Tr::tr("Ctrl+Alt+T"))

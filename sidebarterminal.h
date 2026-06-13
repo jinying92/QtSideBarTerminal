@@ -13,8 +13,8 @@ namespace QtSideBarTerminal::Internal {
  *
  * 负责终端(SimpleTerminalWidget)的完整生命周期：
  * - 延迟创建：首次 toggle 时才创建终端进程，避免启动时 fork
- * - 嵌入右侧面板：通过 RightPaneWidget::setWidget() 将终端放入 Qt Creator 右侧面板
- * - 自动关闭：终端进程退出时自动收起右侧面板
+ * - 嵌入 DockWidget：通过 QDockWidget 将终端放入 Qt Creator 右侧停靠区域
+ * - 自动关闭：终端进程退出时自动隐藏 DockWidget
  */
 class SideBarTerminal : public QObject
 {
