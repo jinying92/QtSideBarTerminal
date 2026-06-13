@@ -8,6 +8,10 @@ SimpleTerminalWidget::SimpleTerminalWidget(QWidget *parent,
                                            const QString &shell)
     : TerminalSolution::TerminalView(parent)
 {
+    setMinimumSize(200, 100);
+    setFocusPolicy(Qt::StrongFocus);
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
     setupProcess(shell);
 }
 
