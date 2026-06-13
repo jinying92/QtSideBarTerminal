@@ -39,7 +39,7 @@ add_qtc_plugin(QtSideBarTerminal
     Qt::Widgets
     QtCreator::ExtensionSystem
     QtCreator::Utils
-    TerminalLib
+    QtCreator::TerminalLib
   SOURCES
     qtsidebarterminal.cpp
     sidebarterminal.h sidebarterminal.cpp
