@@ -4,10 +4,6 @@
 
 #include <QProcess>
 
-namespace Utils::Terminal {
-struct OpenTerminalParameters;
-}
-
 namespace QtSideBarTerminal::Internal {
 
 /**
@@ -26,6 +22,11 @@ namespace QtSideBarTerminal::Internal {
  *   - 键盘/鼠标事件转发到 TerminalSurface
  *   - 终端内容渲染（颜色、光标、选择等）
  *   - 滚动条管理、复制粘贴
+ *
+ * 平台注意：
+ *   Windows: QProcess 使用管道通信，cmd.exe 检测到非交互式 stdin
+ *   后不输出提示符。考虑后期引入 winpty 或 ConPTY。
+ *   Linux: PTY 自动获得完整终端交互。
  */
 class SimpleTerminalWidget : public TerminalSolution::TerminalView
 {
@@ -60,10 +61,6 @@ protected:
 private:
     /// 启动 Shell 进程并连接信号
     void setupProcess(const QString &shell);
-
-    /// Shell 标准输出/错误读取 → 送入 TerminalSurface
-    void onReadyReadStdout();
-    void onReadyReadStderr();
 
     QProcess *m_process = nullptr;
 };

@@ -2,7 +2,34 @@
 
 #include <utils/terminalhooks.h>
 
+#include <QOperatingSystemVersion>
+
 namespace QtSideBarTerminal::Internal {
+
+/**
+ * @brief 构建 Windows Shell 命令行参数
+ *
+ * Windows 上用 QProcess 的管道启动 cmd.exe 时，cmd.exe 会检测到
+ * stdin 不是控制台，进入批处理模式（不显示提示符、不回显输入）。
+ * 使用 powershell.exe 会有类似问题，但可以用 -NoExit 强制交互。
+ *
+ * Linux 上通过 PTY 自动获得完整的终端交互。
+ */
+static QStringList shellArguments(const QString &shell)
+{
+    QStringList args;
+#ifdef Q_OS_WIN
+    if (shell.contains("cmd", Qt::CaseInsensitive)) {
+        args << "/Q";    // 关闭回显
+        // /K 是默认行为，不额外追加
+    } else if (shell.contains("powershell", Qt::CaseInsensitive)) {
+        args << "-NoExit" << "-Command" << "Write-Host ''";
+    }
+#else
+    Q_UNUSED(shell)
+#endif
+    return args;
+}
 
 SimpleTerminalWidget::SimpleTerminalWidget(QWidget *parent,
                                            const QString &shell)
@@ -22,32 +49,40 @@ SimpleTerminalWidget::~SimpleTerminalWidget()
 
 /**
  * @brief 启动 Shell 进程并连接 IO 信号
+ *
+ * 合并 stdout/stderr(MergedChannels)，因为终端中两者都应显示。
+ * 使用 QProcess::started 信号确保进程完全就绪后再发射
+ * SimpleTerminalWidget::started。
  */
 void SimpleTerminalWidget::setupProcess(const QString &shell)
 {
     m_process = new QProcess(this);
-    m_process->setProcessChannelMode(QProcess::SeparateChannels);
+    // MergedChannels: 将 stderr 合并到 stdout 统一读取
+    m_process->setProcessChannelMode(QProcess::MergedChannels);
 
-    // Shell 输出 → TerminalSurface::dataFromPty()
+    // Shell 标准输出 → TerminalSurface
     connect(m_process, &QProcess::readyReadStandardOutput,
-            this, &SimpleTerminalWidget::onReadyReadStdout);
-    connect(m_process, &QProcess::readyReadStandardError,
-            this, &SimpleTerminalWidget::onReadyReadStderr);
+            this, [this]() {
+        surface()->dataFromPty(m_process->readAllStandardOutput());
+    });
 
-    // Shell 退出 → 发射 finished 信号
+    // Shell 进程真正启动后发射信号
+    connect(m_process, &QProcess::started,
+            this, [this]() {
+        emit started(m_process->processId());
+    });
+
+    // Shell 退出
     connect(m_process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
             this, [this](int exitCode, QProcess::ExitStatus) {
         emit finished(exitCode);
     });
 
-    m_process->start(shell);
-
-    if (m_process->state() == QProcess::Running)
-        emit started(m_process->processId());
+    m_process->start(shell, shellArguments(shell));
 }
 
 /**
- * @brief 关闭终端进程
+ * @brief 强制关闭
  */
 void SimpleTerminalWidget::closeTerminal()
 {
@@ -67,23 +102,16 @@ QProcess::ProcessState SimpleTerminalWidget::processState() const
 }
 
 /**
- * @brief 重写：TerminalView/TerminalSurface 需要向 PTY 写入键盘输入等数据时调用
+ * @brief 重写：键盘输入/终端控制 → QProcess stdin
+ *
+ * TerminalSurface 处理用户按键后调用此函数将数据写入 PTY，
+ * 此处重写为写入 QProcess 的 stdin 管道。
  */
 qint64 SimpleTerminalWidget::writeToPty(const QByteArray &data)
 {
     if (!m_process || m_process->state() != QProcess::Running)
         return -1;
     return m_process->write(data);
-}
-
-void SimpleTerminalWidget::onReadyReadStdout()
-{
-    surface()->dataFromPty(m_process->readAllStandardOutput());
-}
-
-void SimpleTerminalWidget::onReadyReadStderr()
-{
-    surface()->dataFromPty(m_process->readAllStandardError());
 }
 
 } // namespace QtSideBarTerminal::Internal
