@@ -60,6 +60,8 @@ void SideBarTerminal::toggleTerminal()
     if (!m_isCreated) {
         createTerminal();
         Core::RightPaneWidget::instance()->setShown(true);
+        if (m_terminal)
+            m_terminal->setFocus();
         return;
     }
 
@@ -68,6 +70,8 @@ void SideBarTerminal::toggleTerminal()
         destroyTerminal();
         createTerminal();
         Core::RightPaneWidget::instance()->setShown(true);
+        if (m_terminal)
+            m_terminal->setFocus();
         return;
     }
 
@@ -92,6 +96,7 @@ void SideBarTerminal::createTerminal()
 
     // 创建简易终端控件（继承 TerminalView 并桥接 QProcess）
     m_terminal = new SimpleTerminalWidget(nullptr, shell);
+    m_terminal->setFocus();
 
     // 终端启动成功
     QObject::connect(m_terminal, &SimpleTerminalWidget::started,

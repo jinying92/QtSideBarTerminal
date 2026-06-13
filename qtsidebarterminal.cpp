@@ -8,7 +8,6 @@
 #include <coreplugin/coreconstants.h>
 #include <coreplugin/icontext.h>
 #include <coreplugin/icore.h>
-#include <coreplugin/rightpane.h>
 
 #include <extensionsystem/iplugin.h>
 
@@ -51,10 +50,6 @@ public:
     void initialize() final
     {
         m_sidebarTerminal = new SideBarTerminal(this);
-
-        // 在编辑模式注册 RightPanePlaceHolder，确保右侧面板可用
-        // 仅在切换到编辑模式时面板才关联到 RightPaneWidget
-        new RightPanePlaceHolder(Core::Constants::MODE_EDIT);
 
         // 注册工具菜单项
         ActionContainer *toolsMenu = ActionManager::actionContainer(Core::Constants::M_TOOLS);
