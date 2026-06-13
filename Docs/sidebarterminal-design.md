@@ -2,13 +2,13 @@
 
 ## 1. 概述
 
-将 Qt Creator 底部 Terminal 以**最小单终端**形式移植到右侧面板（RightPane），实现"打开 → 使用 → 关闭"的最简交互。
+将 Qt Creator 底部 Terminal 以**最小单终端**形式移植到右侧 DockWidget 中，实现"打开 → 使用 → 关闭"的最简交互。
 
 ### 1.1 目标
 
-- 在 Qt Creator 右侧面板嵌入一个独立 Terminal Widget
+- 在 Qt Creator 右侧停靠区域嵌入一个独立终端
 - 支持默认 Shell 自动启动
-- 右侧面板可折叠/展开
+- DockWidget 可折叠/展开/拖拽
 - 不修改 Qt Creator 原有代码，纯插件实现
 
 ### 1.2 非目标（不在本阶段实现）
@@ -24,85 +24,19 @@
 
 | API | 头文件 | 用途 |
 |-----|--------|------|
-| `Terminal::TerminalWidget` | `terminal/terminalwidget.h` | 终端控件本体，独立 QWidget |
-| `Utils::Terminal::OpenTerminalParameters` | `utils/terminalhooks.h` | 终端创建参数 |
-| `Utils::Terminal::defaultShellForDevice` | `utils/terminalhooks.h` | 获取系统默认 Shell |
-| `Core::RightPaneWidget` | `coreplugin/rightpane.h` | 右侧面板容器，`setWidget()` 嵌入任意 QWidget |
-| `Core::RightPanePlaceHolder` | `coreplugin/rightpane.h` | 注册到 Mode，控制面板可见性 |
-| `Core::ICore` | `coreplugin/icore.h` | 获取 `RightPaneWidget::instance()` |
+| `TerminalSolution::TerminalView` | `solutions/terminal/terminalview.h` | 终端渲染控件（TerminalLib 库） |
+| `TerminalSolution::TerminalSurface` | `solutions/terminal/terminalsurface.h` | 终端仿真核心（基于 libvterm） |
+| `Utils::Terminal::defaultShellForDevice` | `utils/terminalhooks.h` | 获取系统默认 Shell（Utils 库） |
+| `Core::ICore` | `coreplugin/icore.h` | 获取 `mainWindow()` 用于 QDockWidget 嵌入 |
+| `QDockWidget` | `QDockWidget` | Qt 标准停靠窗口控件 |
 
-### 2.1 TerminalWidget 关键签名
+### 关键设计决策
 
-```cpp
-namespace Terminal {
-
-class TerminalWidget : public Core::SearchableTerminal  // → TerminalView → QWidget
-{
-public:
-    // 构造即可用，openParameters 为空时使用系统默认 Shell
-    TerminalWidget(QWidget *parent = nullptr,
-                   const Utils::Terminal::OpenTerminalParameters &openParameters = {});
-
-    void closeTerminal();
-    void restart(const Utils::Terminal::OpenTerminalParameters &openParameters);
-
-    QString title() const;
-    Utils::FilePath cwd() const;
-    QProcess::ProcessState processState() const;
-
-signals:
-    void started(qint64 pid);
-    void finished(int exitCode);
-    void cwdChanged(const Utils::FilePath &cwd);
-    void titleChanged();
-};
-}
-```
-
-### 2.2 OpenTerminalParameters 关键字段
-
-```cpp
-namespace Utils::Terminal {
-
-struct OpenTerminalParameters {
-    std::optional<CommandLine> shellCommand;       // 指定 Shell，空则用系统默认
-    std::optional<FilePath> workingDirectory;       // 工作目录，空则用项目根目录
-    std::optional<Environment> environment;         // 环境变量
-    ExitBehavior m_exitBehavior{ExitBehavior::Close}; // 退出行为
-    std::optional<Id> identifier;                   // 终端标识符
-};
-
-// ExitBehavior 枚举：
-enum class ExitBehavior { Close, Restart, Keep };
-
-}
-```
-
-### 2.3 RightPaneWidget 关键签名
-
-```cpp
-namespace Core {
-
-class RightPaneWidget : public QWidget
-{
-public:
-    static RightPaneWidget *instance();       // 全局单例
-    void setWidget(QWidget *widget);          // 嵌入任意 QWidget
-    QWidget *widget() const;                  // 当前嵌入的 widget
-    bool isShown() const;                    // 是否展开
-    void setShown(bool b);                   // 折叠/展开
-};
-
-class RightPanePlaceHolder : public QWidget
-{
-public:
-    explicit RightPanePlaceHolder(Utils::Id mode, QWidget *parent = nullptr);
-    // mode: 对应 IMode 的 ID，如 Constants::MODE_EDIT
-    // 当切换到该 mode 时自动关联到 RightPaneWidget
-};
-
-}
-```
+| 决策 | 选择 | 原因 |
+|------|------|------|
+| 终端控件来源 | `TerminalView`（TerminalLib 库） | Terminal 插件在 Windows 上不导出 `TerminalWidget` 符号 |
+| 嵌入方式 | `QDockWidget` | `RightPaneWidget::setWidget()` 在 QtCreator 19.0.2 上行为异常 |
+| Shell 管理 | `QProcess` 直接管理 | 避免依赖 `TerminalProcessImpl`（插件内部 API） |
 
 ---
 
@@ -111,82 +45,105 @@ public:
 ### 3.1 类图
 
 ```
-┌──────────────────────────────────────┐
-│  SideBarTerminalPlugin (IPlugin)     │
-│  + initialize()                      │
-│  + extensionsInitialized()           │
-│  - m_sidebarTerminal*               │
-└──────────┬───────────────────────────┘
+┌────────────────────────────────────────┐
+│  QtSideBarTerminalPlugin (IPlugin)     │
+│  + initialize()                        │
+│  + extensionsInitialized()             │
+│  - m_sidebarTerminal*                  │
+└──────────┬─────────────────────────────┘
            │ 创建并持有
            ▼
-┌──────────────────────────────────────┐
-│  SideBarTerminal (QObject)           │
-│  + toggleTerminal()                  │
-│  + isTerminalVisible()               │
-│  - m_terminal: TerminalWidget*       │
-│  - m_isCreated: bool                 │
-└──────────┬───────────────────────────┘
-           │ 创建并嵌入
+┌────────────────────────────────────────┐
+│  SideBarTerminal (QObject)             │
+│  + toggleTerminal()                    │
+│  + isTerminalVisible()                 │
+│  - m_terminal: SimpleTerminalWidget*   │
+│  - m_isCreated: bool                   │
+└──────────┬─────────────────────────────┘
+           │ 创建并放入 DockWidget
            ▼
-┌──────────────────────────────────────┐
-│  TerminalWidget (SearchableTerminal) │ ← Qt Creator SDK 提供
-│  完整的终端控件                       │
-└──────────────────────────────────────┘
-           │ 通过 setWidget() 放入
+┌────────────────────────────────────────┐
+│  SimpleTerminalWidget (TerminalView)   │ ← TerminalLib 库
+│  继承 TerminalView，桥接 QProcess      │
+│  - m_process: QProcess*                │
+└──────────┬─────────────────────────────┘
+           │ 通过 QDockWidget 停靠到
            ▼
-┌──────────────────────────────────────┐
-│  RightPaneWidget (单例)              │ ← Qt Creator SDK 提供
-│  Qt Creator 右侧面板容器              │
-└──────────────────────────────────────┘
+┌────────────────────────────────────────┐
+│  QDockWidget (Qt 标准控件)             │
+│  Qt Creator 主窗口右侧停靠区域          │
+└────────────────────────────────────────┘
 ```
 
-### 3.2 生命周期
+### 3.2 数据流
+
+```
+用户按键 → TerminalView → TerminalSurface → writeToPty() [override]
+  → QProcess::write() → Shell
+                               ↑
+Shell 输出 → QProcess → onReadyReadStdout/Stderr
+  → surface()->dataFromPty() → TerminalSurface → TerminalView 渲染
+```
+
+### 3.3 生命周期
 
 ```
 插件加载
   → initialize()
-    → 创建 SideBarTerminal（不立即创建 TerminalWidget）
-    → 注册 RightPanePlaceHolder(Constants::MODE_EDIT)
-    → 注册菜单项 Toggle Terminal
+    → 创建 SideBarTerminal（不立即创建终端）
+    → 注册菜单项 Toggle Terminal (Ctrl+Alt+T)
 
-用户点击菜单 / 快捷键
+用户 Ctrl+Alt+T 首次触发
   → SideBarTerminal::toggleTerminal()
-    → 首次调用：创建 TerminalWidget → RightPaneWidget::setWidget()
-    → 调用 RightPaneWidget::setShown(true/false)
+    → 创建 SimpleTerminalWidget → 启动 QProcess(Shell)
+    → 创建 QDockWidget → 停靠到 mainWindow 右侧 → show()
+    → 设置焦点
+
+用户再次 Ctrl+Alt+T
+  → 切换 DockWidget 可见性
+
+Shell 进程退出
+  → finished 信号 → 自动隐藏 DockWidget
 
 用户关闭 Qt Creator
   → aboutToShutdown()
-    → 关闭终端进程
-    → 清理资源
+    → 关闭终端进程 → 销毁 DockWidget
 ```
 
 ---
 
-## 4. 详细实现方案
+## 4. 类设计
 
-### 4.1 插件骨架（CMakeLists.txt）
+### 4.1 SimpleTerminalWidget
 
-```cmake
-project(QtSideBarTerminal LANGUAGES CXX)
+```cpp
+class SimpleTerminalWidget : public TerminalSolution::TerminalView
+{
+    Q_OBJECT
+public:
+    explicit SimpleTerminalWidget(QWidget *parent, const QString &shell);
+    ~SimpleTerminalWidget() override;
 
-find_package(QtCreator REQUIRED COMPONENTS Core)
-find_package(Qt6 COMPONENTS Widgets REQUIRED)
+    void closeTerminal();
+    QProcess::ProcessState processState() const;
 
-add_qtc_plugin(QtSideBarTerminal
-  PLUGIN_DEPENDS
-    QtCreator::Core
-    QtCreator::Terminal        # Link against Terminal plugin
-  DEPENDS
-    Qt::Widgets
-    QtCreator::ExtensionSystem
-    QtCreator::Utils
-  SOURCES
-    sidebarterminalplugin.cpp
-    sidebarterminal.cpp
-)
+signals:
+    void started(qint64 pid);
+    void finished(int exitCode);
+
+protected:
+    qint64 writeToPty(const QByteArray &data) override;
+
+private:
+    void setupProcess(const QString &shell);
+    void onReadyReadStdout();
+    void onReadyReadStderr();
+
+    QProcess *m_process = nullptr;
+};
 ```
 
-### 4.2 SideBarTerminal 类
+### 4.2 SideBarTerminal
 
 ```cpp
 class SideBarTerminal : public QObject
@@ -203,139 +160,67 @@ private:
     void createTerminal();
     void destroyTerminal();
 
-    Terminal::TerminalWidget *m_terminal = nullptr;
+    SimpleTerminalWidget *m_terminal = nullptr;
     bool m_isCreated = false;
 };
 ```
 
-### 4.3 创建终端流程
+---
 
-```cpp
-void SideBarTerminal::createTerminal()
-{
-    if (m_isCreated)
-        return;
+## 5. 文件清单
 
-    // 获取系统默认 Shell
-    const auto shellPath = Utils::Terminal::defaultShellForDevice(
-        Utils::FilePath::fromString(QDir::rootPath()));
-
-    // 构建启动参数
-    Utils::Terminal::OpenTerminalParameters params;
-    if (shellPath) {
-        params.shellCommand = Utils::CommandLine(*shellPath);
-    }
-    params.m_exitBehavior = Utils::Terminal::ExitBehavior::Close;
-
-    // 创建 TerminalWidget（默认参数自动使用系统 Shell）
-    m_terminal = new Terminal::TerminalWidget(nullptr, params);
-
-    // 信号连接
-    connect(m_terminal, &Terminal::TerminalWidget::started,
-            this, [](qint64 pid) {
-        // 日志：终端已启动，PID=xxx
-    });
-    connect(m_terminal, &Terminal::TerminalWidget::finished,
-            this, [this](int exitCode) {
-        // 终端退出后关闭右侧面板
-        Core::RightPaneWidget::instance()->setShown(false);
-    });
-
-    // 嵌入到右侧面板
-    Core::RightPaneWidget::instance()->setWidget(m_terminal);
-
-    m_isCreated = true;
-}
 ```
-
-### 4.4 插件初始化
-
-```cpp
-void SideBarTerminalPlugin::initialize()
-{
-    m_sidebarTerminal = new SideBarTerminal(this);
-
-    // 在编辑模式注册 RightPanePlaceHolder，确保右侧面板可用
-    new Core::RightPanePlaceHolder(Core::Constants::MODE_EDIT);
-
-    // 注册菜单项 / 快捷键
-    // 通过 ActionBuilder 添加 Toggle Terminal 操作
-}
-
-void SideBarTerminalPlugin::extensionsInitialized()
-{
-    // 所有插件就绪后的初始化（可选）
-}
-```
-
-### 4.5 菜单/快捷键注册
-
-```cpp
-// 注册动作
-auto action = new QAction(Tr::tr("Toggle Sidebar Terminal"), this);
-connect(action, &QAction::triggered, m_sidebarTerminal,
-        &SideBarTerminal::toggleTerminal);
-
-Core::ActionManager::registerAction(
-    action, "QtSideBarTerminal.Toggle",
-    Core::Context(Core::Constants::C_GLOBAL));
+QtSideBarTerminal/
+├── CMakeLists.txt
+├── QtSideBarTerminal.json.in
+├── qtsidebarterminal.cpp           # IPlugin 实现
+├── qtsidebarterminalconstants.h    # ID 常量
+├── qtsidebarterminaltr.h          # 翻译工具
+├── sidebarterminal.h              # SideBarTerminal 管理类
+├── sidebarterminal.cpp
+├── simpleterminal.h               # SimpleTerminalWidget
+├── simpleterminal.cpp
+├── .gitignore
+└── Docs/
+    └── sidebarterminal-design.md  # 本文档
 ```
 
 ---
 
-## 5. 关键决策与约束
+## 6. 关键决策与约束
 
-### 5.1 单终端 vs 多终端
+### 6.1 终端控件来源
 
-**选择：单终端**
+**选择：继承 TerminalLib 的 TerminalView**
 
 | 因素 | 影响 |
 |------|------|
-| 右侧面板宽度有限（通常 300-400px） | 不适合 TabBar + 终端（空间不足） |
-| TerminalPane 已有完整多标签方案 | 不需重复造轮子 |
-| 最小系统目标 | 快速验证可行性 |
+| Terminal 插件不导出 Widget 符号 | Windows DLL 仅导出 `qt_plugin_instance` 和 `qt_plugin_query_metadata_v2` |
+| TerminalLib 是可链接的库 | `add_qtc_library(TerminalLib)`，有 `TERMINAL_EXPORT` |
+| TerminalView 有完整终端渲染 | 基于 libvterm，支持 ANSI 色彩、光标等 |
 
-### 5.2 创建时机
+### 6.2 嵌入方式：QDockWidget vs RightPaneWidget
 
-**选择：延迟创建（首次 show 时创建）**
+| 因素 | QDockWidget | RightPaneWidget |
+|------|-------------|-----------------|
+| 可靠性 | Qt 标准控件，行为稳定 | QtCreator 版本间 API 行为不一致 |
+| 可拖拽 | 用户可自由移动/拆分为浮动窗口 | 固定位置 |
+| 依赖 | 纯 Qt，无 Creator 内部 API | 需要 RightPanePlaceHolder 配合 |
+
+### 6.3 创建时机
+
+**选择：延迟创建（首次 toggle 时创建）**
 
 | 因素 | 影响 |
 |------|------|
 | 启动性能 | 避免 Qt Creator 启动时就 fork 终端进程 |
 | 资源占用 | 不使用时零开销 |
 
-### 5.3 工作目录
+### 6.4 Shell 管理
 
-**选择：用户家目录（默认），可后续扩展为项目根目录**
+**选择：QProcess 直接管理**
 
-```cpp
-// 暂不传入 workingDirectory，TerminalWidget 默认使用 QDir::homePath()
-// 后续可扩展为：params.workingDirectory = ProjectTree::currentProject()->projectDirectory();
-```
-
-### 5.4 关闭行为
-
-**选择：`ExitBehavior::Close`**
-
-终端退出后不自动重启，仅关闭右侧面板。
-
----
-
-## 6. 文件清单
-
-```
-QtSideBarTerminal/
-├── CMakeLists.txt
-├── QtSideBarTerminal.json.in
-├── sidebarterminalplugin.h        # IPlugin 实现
-├── sidebarterminalplugin.cpp
-├── sidebarterminal.h              # SideBarTerminal 管理类
-├── sidebarterminal.cpp
-├── sidebarterminalconstants.h     # ID 常量
-├── sidebarterminaltr.h            # 翻译工具类
-└── Docs/
-    └── sidebarterminal-design.md  # 本文档
-```
+不使用 `Utils::TerminalInterface`（其 Stub Creator 机制过于复杂），直接在构造函数中 `QProcess::start(shell)` 启动，`writeToPty()` 重写中调用 `QProcess::write()`。
 
 ---
 
@@ -343,18 +228,18 @@ QtSideBarTerminal/
 
 | 风险 | 影响 | 缓解措施 |
 |------|------|---------|
-| `TerminalWidget` 在窄侧边栏可能布局异常 | 终端宽度不足，命令行换行体验差 | 用户可拖拽调整面板宽度 |
-| `RightPaneWidget::setWidget()` 替换已有内容 | 其他插件可能也用右侧面板 | 通过 PlaceHolder 的 mode 机制隔离（仅在编辑模式显示） |
-| `Terminal::defaultShellForDevice` 在 Windows 返回空 | 无法获取默认 Shell | 回退到 `cmd.exe` 或 `pwsh.exe` |
+| `TerminalView` 在窄侧边栏布局异常 | 终端宽度不足，命令行换行体验差 | 用户可拖拽调整 DockWidget 宽度 |
+| `QProcess` 在 Windows 上无 PTY | 部分交互式命令行为与真实终端不同 | 后期可用 winpty 替换 |
+| `defaultShellForDevice` 在 Windows 返回空 | 无法获取默认 Shell | 回退到 `cmd.exe` |
 | 终端进程未清理 | Qt Creator 关闭时残留进程 | `aboutToShutdown()` 中显式调用 `closeTerminal()` |
-| 非编辑模式下右侧面板不可用 | Toggle 无需响应 | PlaceHolder 绑定到 `MODE_EDIT` 即可 |
+| QDockWidget 浮动后可能脱离主窗口 | 用户体验问题 | 无缓解（用户自由选择） |
 
 ---
 
 ## 8. 后续扩展可能
 
 1. **工作目录联动** — 自动使用 `%{CurrentProject:Path}` 作为工作目录
-2. **工具栏按钮** — 在侧边栏顶部添加"新建终端"、"关闭终端"按钮
+2. **工具栏按钮** — 在 DockWidget 标题栏添加"新建终端"、"关闭终端"按钮
 3. **Shell 选择** — 添加右键菜单选择 cmd/powershell/bash
-4. **快捷键传递** — Ctrl+C / Ctrl+D 等键盘快捷键正确传递到终端
-5. **拖拽调整** — 支持在底部/侧边栏之间拖拽切换位置
+4. **PTY 支持** — 在 Windows 上使用 winpty 提供真正的 PTY 支持
+5. **快捷键传递** — Ctrl+C / Ctrl+D 等键盘快捷键正确传递到终端
