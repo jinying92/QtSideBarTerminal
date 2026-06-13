@@ -24,7 +24,7 @@ static QString defaultShellPath()
     const auto shellPath = Utils::Terminal::defaultShellForDevice(
         Utils::FilePath::fromString(QDir::rootPath()));
     if (shellPath)
-        return shellPath->executable().toString();
+        return shellPath->toString();
     // 回退：Windows 用 cmd.exe，Linux 用 /bin/sh
 #ifdef Q_OS_WIN
     return QStringLiteral("cmd.exe");
