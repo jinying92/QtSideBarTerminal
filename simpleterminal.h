@@ -67,8 +67,14 @@ protected:
     /// @reimp 延迟启动 Shell（到首次显示时，确保项目已加载）
     void showEvent(QShowEvent *event) override;
 
+    /// @reimp 将选中文本写入系统剪贴板
+    void setClipboard(const QString &text) override;
+
     /// @reimp 拦截事件，防止 Qt Creator 全局快捷键吞掉终端按键
     bool event(QEvent *event) override;
+
+    /// @reimp 鼠标按键（日志右键 selection 状态，用于调试复制）
+    void mousePressEvent(QMouseEvent *event) override;
 
 private:
     /// 以 PTY 模式启动 Shell 进程

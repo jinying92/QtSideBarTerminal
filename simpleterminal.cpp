@@ -8,6 +8,8 @@
 #include <projectexplorer/project.h>
 #include <projectexplorer/projecttree.h>
 
+#include <QApplication>
+#include <QClipboard>
 #include <QDateTime>
 #include <QDeadlineTimer>
 #include <QDir>
@@ -84,17 +86,13 @@ void SimpleTerminalWidget::showEvent(QShowEvent *event)
  *
  * ShortcutOverride：阻止 Qt 应用层拦截 ESC 和 Ctrl 组合键，
  *   使其到达 TerminalView 的正常按键处理。
- * KeyPress：Ctrl+退格 直接发送 \x17（删除前一词），
- *   因为 libvterm 对 Ctrl+Backspace 的映射不正确。
- * ContextMenu：阻止 Qt 默认右键菜单干扰 TerminalView 自带的
- *   右键复制/粘贴逻辑。
+ * KeyPress：Ctrl+退格 发 \x17（删前一词）；Ctrl+V 调粘贴。
  */
 bool SimpleTerminalWidget::event(QEvent *event)
 {
     switch (event->type()) {
     case QEvent::ShortcutOverride: {
         auto *keyEvent = static_cast<QKeyEvent *>(event);
-        // 任一条件成立则拦截：① ESC  ② 带 Ctrl 修饰符的任意按键
         if (keyEvent->key() == Qt::Key_Escape
             || (keyEvent->modifiers() & Qt::ControlModifier)) {
             event->accept();
@@ -104,22 +102,46 @@ bool SimpleTerminalWidget::event(QEvent *event)
     }
     case QEvent::KeyPress: {
         auto *keyEvent = static_cast<QKeyEvent *>(event);
-        // Ctrl+Backspace → 标准"删除前一词"序列
         if (keyEvent->key() == Qt::Key_Backspace
             && (keyEvent->modifiers() & Qt::ControlModifier)) {
+            // Ctrl+退格 → 删前一词
             writeToPty(QByteArrayLiteral("\x17"));
+            return true;
+        }
+        if (keyEvent->key() == Qt::Key_V
+            && (keyEvent->modifiers() & Qt::ControlModifier)
+            && !(keyEvent->modifiers() & Qt::ShiftModifier)) {
+            // Ctrl+V → 粘贴（读取剪贴板写入 PTY）
+            pasteFromClipboard();
             return true;
         }
         break;
     }
-    case QEvent::ContextMenu:
-        // 阻止默认上下文菜单，让 TerminalView::mousePressEvent 自处理
-        event->accept();
-        return true;
     default:
         break;
     }
     return TerminalSolution::TerminalView::event(event);
+}
+
+/**
+ * @brief 鼠标按键（日志右键 selection 状态，用于调试复制）
+ */
+void SimpleTerminalWidget::mousePressEvent(QMouseEvent *event)
+{
+    if (event->button() == Qt::RightButton) {
+        // 确认执行时是否存在选中文本
+        const bool hasSel = (selection() != std::nullopt);
+        logToFile(QString("mousePressEvent RIGHT click: hasSelection=%1")
+                      .arg(hasSel));
+    }
+    TerminalSolution::TerminalView::mousePressEvent(event);
+}
+
+/// @reimp 将选中文本写入系统剪贴板（TerminalView 默认实现为空）
+void SimpleTerminalWidget::setClipboard(const QString &text)
+{
+    logToFile(QString("setClipboard: text=%1 chars").arg(text.size()));
+    QApplication::clipboard()->setText(text);
 }
 
 /**
