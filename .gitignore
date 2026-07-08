@@ -1,0 +1,15 @@
+# Build artifacts
+build/
+
+# IDE
+.DS_Store
+*.user
+*.swp
+*.swo
+
+# Compiled
+*.o
+*.so
+*.dll
+*.dylib
+moc_*.cpp
