@@ -3,7 +3,8 @@
 在 Qt Creator 右侧栏（项目/文件系统/大纲）中嵌入一个**真正的终端**，支持交互式 Shell 和 PTY（ConPTY on Windows）。最终目标是在侧边栏中运行 **AI Agent CLI**（如 Claude Code、Copilot CLI 等），在编码过程中随时调用 AI 助手。
 
 ---
-![Uploading img_v3_0213d_4ba8b052-6219-4d86-93ae-45359a8611eg.jpg…]()
+<img width="1919" height="1026" alt="img_v3_0213d_4ba8b052-6219-4d86-93ae-45359a8611eg" src="https://github.com/user-attachments/assets/a2867f00-4a1a-4896-9af5-23c96f714d37" />
+
 
 ## 最终目标
 
