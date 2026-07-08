@@ -67,6 +67,9 @@ protected:
     /// @reimp 延迟启动 Shell（到首次显示时，确保项目已加载）
     void showEvent(QShowEvent *event) override;
 
+    /// @reimp 拦截事件，防止 Qt Creator 全局快捷键吞掉终端按键
+    bool event(QEvent *event) override;
+
 private:
     /// 以 PTY 模式启动 Shell 进程
     void setupPty();

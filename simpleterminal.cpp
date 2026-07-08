@@ -80,6 +80,49 @@ void SimpleTerminalWidget::showEvent(QShowEvent *event)
 }
 
 /**
+ * @brief 拦截事件，防止 Qt Creator 全局快捷键吞掉终端按键
+ *
+ * ShortcutOverride：阻止 Qt 应用层拦截 ESC 和 Ctrl 组合键，
+ *   使其到达 TerminalView 的正常按键处理。
+ * KeyPress：Ctrl+退格 直接发送 \x17（删除前一词），
+ *   因为 libvterm 对 Ctrl+Backspace 的映射不正确。
+ * ContextMenu：阻止 Qt 默认右键菜单干扰 TerminalView 自带的
+ *   右键复制/粘贴逻辑。
+ */
+bool SimpleTerminalWidget::event(QEvent *event)
+{
+    switch (event->type()) {
+    case QEvent::ShortcutOverride: {
+        auto *keyEvent = static_cast<QKeyEvent *>(event);
+        // 任一条件成立则拦截：① ESC  ② 带 Ctrl 修饰符的任意按键
+        if (keyEvent->key() == Qt::Key_Escape
+            || (keyEvent->modifiers() & Qt::ControlModifier)) {
+            event->accept();
+            return true;
+        }
+        break;
+    }
+    case QEvent::KeyPress: {
+        auto *keyEvent = static_cast<QKeyEvent *>(event);
+        // Ctrl+Backspace → 标准"删除前一词"序列
+        if (keyEvent->key() == Qt::Key_Backspace
+            && (keyEvent->modifiers() & Qt::ControlModifier)) {
+            writeToPty(QByteArrayLiteral("\x17"));
+            return true;
+        }
+        break;
+    }
+    case QEvent::ContextMenu:
+        // 阻止默认上下文菜单，让 TerminalView::mousePressEvent 自处理
+        event->accept();
+        return true;
+    default:
+        break;
+    }
+    return TerminalSolution::TerminalView::event(event);
+}
+
+/**
  * @brief 以 PTY 模式启动 Shell 进程
  *
  * 关键点：使用 Utils::Process 并调用 setPtyData() 启用伪终端，
