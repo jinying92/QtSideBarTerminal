@@ -55,6 +55,9 @@ SimpleTerminalWidget::~SimpleTerminalWidget()
 }
 
 /**
+}
+
+/**
  * @brief 延迟启动 Shell（首次显示时）
  *
  * Qt Creator 启动时可能先恢复侧栏状态（触发 createWidget），此时项目
@@ -64,13 +67,14 @@ SimpleTerminalWidget::~SimpleTerminalWidget()
 void SimpleTerminalWidget::showEvent(QShowEvent *event)
 {
     QWidget::showEvent(event);
+
     if (!m_process) {
         if (m_processWasKilled) {
             logToFile("showEvent: skipping, process was killed (shutdown in progress)");
         } else {
             logToFile("showEvent: first show, starting process");
             setupPty();
-            applySizeChange(); // 将当前实际尺寸下发 PTY
+            applySizeChange();
         }
     }
 }
