@@ -401,6 +401,9 @@ QtSideBarTerminal_IS_TOP_LEVEL:STATIC=ON
 //Value Computed by CMake
 QtSideBarTerminal_SOURCE_DIR:STATIC=D:/SourceCode/Components_Projects/QtSideBarTerminal
 
+//Path to a library.
+TERMINAL_IMPORT_LIB:FILEPATH=TERMINAL_IMPORT_LIB-NOTFOUND
+
 //Path to a program.
 Vulkan_GLSLANG_VALIDATOR_EXECUTABLE:FILEPATH=Vulkan_GLSLANG_VALIDATOR_EXECUTABLE-NOTFOUND
 

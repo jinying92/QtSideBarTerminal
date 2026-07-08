@@ -4,6 +4,15 @@
     <ClCompile Include="D:\SourceCode\Components_Projects\QtSideBarTerminal\build\Qt_6\QtSideBarTerminal_autogen\mocs_compilation_Debug.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="D:\SourceCode\Components_Projects\QtSideBarTerminal\qtsidebarterminal.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SourceCode\Components_Projects\QtSideBarTerminal\terminalnavigationfactory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\SourceCode\Components_Projects\QtSideBarTerminal\simpleterminal.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="D:\SourceCode\Components_Projects\QtSideBarTerminal\build\Qt_6\QtSideBarTerminal_autogen\mocs_compilation_Release.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -15,9 +24,26 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="D:\SourceCode\Components_Projects\QtSideBarTerminal\terminalnavigationfactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\SourceCode\Components_Projects\QtSideBarTerminal\simpleterminal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\SourceCode\Components_Projects\QtSideBarTerminal\qtsidebarterminaltr.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\SourceCode\Components_Projects\QtSideBarTerminal\QtSideBarTerminal.json.in">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
     <CustomBuild Include="D:\SourceCode\Components_Projects\QtSideBarTerminal\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{EFA10DC3-D4B2-3184-B6A0-A91DCB381FFB}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Source Files">
       <UniqueIdentifier>{CD51EDBC-22E4-3F1A-BB33-49A7E7894529}</UniqueIdentifier>
     </Filter>

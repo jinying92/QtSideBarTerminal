@@ -35,6 +35,7 @@ endif()
 add_qtc_plugin(QtSideBarTerminal
   PLUGIN_DEPENDS
     QtCreator::Core
+    QtCreator::ProjectExplorer
   DEPENDS
     Qt::Widgets
     QtCreator::ExtensionSystem
@@ -42,9 +43,8 @@ add_qtc_plugin(QtSideBarTerminal
     QtCreator::TerminalLib
   SOURCES
     qtsidebarterminal.cpp
-    sidebarterminal.h sidebarterminal.cpp
+    terminalnavigationfactory.h terminalnavigationfactory.cpp
     simpleterminal.h simpleterminal.cpp
-    qtsidebarterminalconstants.h
     qtsidebarterminaltr.h
 )
 

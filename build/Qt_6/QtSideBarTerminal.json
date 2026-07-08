@@ -12,6 +12,6 @@
     "DocumentationUrl" : "",
     "Dependencies" : [
         { "Id" : "core", "Version" : "19.0.2" },
-        { "Id" : "terminal", "Version" : "19.0.2" }
+        { "Id" : "projectexplorer", "Version" : "19.0.2" }
     ]
 }

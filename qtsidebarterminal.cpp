@@ -1,34 +1,37 @@
-#include "qtsidebarterminalconstants.h"
 #include "qtsidebarterminaltr.h"
-#include "sidebarterminal.h"
-
-#include <coreplugin/actionmanager/actioncontainer.h>
-#include <coreplugin/actionmanager/actionmanager.h>
-#include <coreplugin/actionmanager/command.h>
-#include <coreplugin/coreconstants.h>
-#include <coreplugin/icontext.h>
-#include <coreplugin/icore.h>
+#include "simpleterminal.h"
+#include "terminalnavigationfactory.h"
 
 #include <extensionsystem/iplugin.h>
 
-#include <QAction>
-#include <QMainWindow>
-#include <QMenu>
-
-using namespace Core;
+#include <QCoreApplication>
+#include <QDateTime>
+#include <QDir>
+#include <QFile>
+#include <QTextStream>
 
 namespace QtSideBarTerminal::Internal {
+
+/// 写日志到临时目录
+static void pluginLog(const QString &msg)
+{
+    QFile file(QDir::tempPath() + "/QtSideBarTerminal.log");
+    if (file.open(QIODevice::WriteOnly | QIODevice::Append)) {
+        QTextStream out(&file);
+        out << QDateTime::currentDateTime().toString("hh:mm:ss.zzz") << " "
+            << "[plugin] " << msg << "\n";
+    }
+}
 
 /**
  * @brief QtSideBarTerminalPlugin - Qt Creator 侧边栏终端插件
  *
- * 将终端(SimpleTerminalWidget)通过 QDockWidget 停靠在 Qt Creator 右侧，
- * 实现"打开 -> 使用 -> 关闭"的最简单终端交互。
+ * 通过注册 TerminalNavigationFactory（Core::INavigationWidgetFactory），
+ * 将终端作为选项卡嵌入 Qt Creator 右侧栏（与"项目/文件系统/大纲"并列）。
  *
  * 生命周期：
- *   initialize()              — 创建 SideBarTerminal，注册菜单
- *   extensionsInitialized()   — 所有依赖插件就绪（无需额外操作）
- *   aboutToShutdown()         — 销毁终端，清理资源
+ *   initialize()           — 创建并注册 TerminalNavigationFactory
+ *   aboutToShutdown()      — 强制终止所有活跃的 Shell 进程
  */
 class QtSideBarTerminalPlugin final : public ExtensionSystem::IPlugin
 {
@@ -37,55 +40,29 @@ class QtSideBarTerminalPlugin final : public ExtensionSystem::IPlugin
 
 public:
     QtSideBarTerminalPlugin() = default;
-
     ~QtSideBarTerminalPlugin() final = default;
 
-    /**
-     * @brief 插件初始化
-     *
-     * 1. 创建 SideBarTerminal 管理对象
-     * 2. 注册 RightPanePlaceHolder(MODE_EDIT)，确保编辑模式下右侧面板可用
-     * 3. 在工具菜单注册 Toggle Sidebar Terminal 动作
-     */
     void initialize() final
     {
-        m_sidebarTerminal = new SideBarTerminal(this);
-
-        // 注册工具菜单项
-        ActionBuilder(this, Constants::TOGGLE_ACTION_ID)
-            .setText(Tr::tr("Toggle Sidebar Terminal"))
-            .setDefaultKeySequence(Tr::tr("Ctrl+Alt+T"))
-            .addToContainer(Core::Constants::M_TOOLS)
-            .addOnTriggered(this, &QtSideBarTerminalPlugin::toggleTerminal);
-    }
-
-    void extensionsInitialized() final
-    {
-        // 所有依赖插件已就绪，无需额外操作
+        new TerminalNavigationFactory;
     }
 
     /**
-     * @brief 插件关闭前清理
+     * @brief 插件关闭前强制终止所有 Shell 进程
      *
-     * 删除 SideBarTerminal（析构函数中自动关闭终端进程）。
+     * 在 Qt Creator 关闭时，NavigationWidget 可能不销毁 Terminal widget，
+     * 导致 Utils::Process 持有的 ConPTY 句柄未能释放，阻塞进程退出。
+     * 此处主动 kill 所有活跃进程，释放句柄。
      */
     ShutdownFlag aboutToShutdown() final
     {
-        delete m_sidebarTerminal;
-        m_sidebarTerminal = nullptr;
+        pluginLog("aboutToShutdown entered");
+        SimpleTerminalWidget::killAllProcesses();
+        // 刷新挂起事件（如 deferred delete）确保清理完成
+        QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+        pluginLog("aboutToShutdown done");
         return SynchronousShutdown;
     }
-
-private:
-    /// 菜单动作触发：切换终端显示/隐藏
-    void toggleTerminal()
-    {
-        if (m_sidebarTerminal) {
-            m_sidebarTerminal->toggleTerminal();
-        }
-    }
-
-    SideBarTerminal *m_sidebarTerminal = nullptr;
 };
 
 } // namespace QtSideBarTerminal::Internal

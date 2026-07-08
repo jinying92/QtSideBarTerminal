@@ -33,11 +33,11 @@ if(NOT DEFINED CMAKE_CROSSCOMPILING)
 endif()
 
 if(CMAKE_INSTALL_COMPONENT STREQUAL "Devel")
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/include/qtcreator" TYPE FILE FILES "D:/SourceCode/Components_Projects/QtSideBarTerminal/sidebarterminal.h")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/include/qtcreator" TYPE FILE FILES "D:/SourceCode/Components_Projects/QtSideBarTerminal/terminalnavigationfactory.h")
 endif()
 
 if(CMAKE_INSTALL_COMPONENT STREQUAL "Devel")
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/include/qtcreator" TYPE FILE FILES "D:/SourceCode/Components_Projects/QtSideBarTerminal/qtsidebarterminalconstants.h")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/include/qtcreator" TYPE FILE FILES "D:/SourceCode/Components_Projects/QtSideBarTerminal/simpleterminal.h")
 endif()
 
 if(CMAKE_INSTALL_COMPONENT STREQUAL "Devel")

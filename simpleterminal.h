@@ -2,31 +2,35 @@
 
 #include <solutions/terminal/terminalview.h>
 
+#include <utils/processinterface.h> // Utils::Pty::Data
+#include <utils/qtcprocess.h>        // Utils::Process
+
+#include <QColor>
 #include <QProcess>
+
+#include <array>
 
 namespace QtSideBarTerminal::Internal {
 
 /**
  * @brief SimpleTerminalWidget - 基于 TerminalLib 的简易终端控件
  *
- * 继承 TerminalView（来自 TerminalLib 库，可链接），覆盖 writeToPty() 
- * 桥接到 QProcess，实现 Shell 的输入输出。不再依赖 Terminal 插件的 
- * TerminalWidget（该符号在 Windows 上未导出）。
+ * 继承 TerminalView（来自可链接的 TerminalLib 库），重写 writeToPty() /
+ * resizePty() 桥接到 Utils::Process。Utils::Process 在调用 setPtyData()
+ * 后会启用伪终端：
+ *   - Windows: Utils 内部使用 ConPTY，Shell 检测到 TTY 后进入交互模式
+ *   - Linux:   使用系统 PTY
+ * 从而获得完整的终端交互（提示符、回显、输入均正常）。
  *
  * 数据流：
- *   TerminalView ←→ TerminalSurface  ←→ QProcess (Shell)
- *      渲染        libvterm 仿真        writeToPty() / dataFromPty()
+ *   键盘/鼠标 → TerminalSurface → writeToPty()  → Utils::Process(PTY) → Shell
+ *   Shell 输出 → Utils::Process → readAllRawStandardOutput() → dataFromPty()
  *
  * TerminalView 内部自动处理：
- *   - ANSI 转义码解析（通过 libvterm）
+ *   - ANSI 转义码解析（libvterm）
  *   - 键盘/鼠标事件转发到 TerminalSurface
- *   - 终端内容渲染（颜色、光标、选择等）
- *   - 滚动条管理、复制粘贴
- *
- * 平台注意：
- *   Windows: QProcess 使用管道通信，cmd.exe 检测到非交互式 stdin
- *   后不输出提示符。考虑后期引入 winpty 或 ConPTY。
- *   Linux: PTY 自动获得完整终端交互。
+ *   - 内容渲染（颜色、光标、选择）、滚动条、复制粘贴
+ *   - 尺寸变化通过 applySizeChange() → resizePty() 下发
  */
 class SimpleTerminalWidget : public TerminalSolution::TerminalView
 {
@@ -40,10 +44,10 @@ public:
 
     ~SimpleTerminalWidget() override;
 
-    /// 关闭终端进程
+    /// 关闭底层 Shell 进程
     void closeTerminal();
 
-    /// 获取底层进程状态
+    /// 获取进程状态
     QProcess::ProcessState processState() const;
 
 signals:
@@ -54,15 +58,36 @@ signals:
     void finished(int exitCode);
 
 protected:
-    /// @reimp TerminalView::writeToPty
-    /// TerminalSurface 需要向 PTY 写入数据时调用，此处转发到 QProcess
+    /// @reimp 终端按键数据 → 写入 PTY
     qint64 writeToPty(const QByteArray &data) override;
 
-private:
-    /// 启动 Shell 进程并连接信号
-    void setupProcess(const QString &shell);
+    /// @reimp 终端尺寸变化（行列数）→ 通知 PTY 调整
+    bool resizePty(QSize newSize) override;
 
-    QProcess *m_process = nullptr;
+    /// @reimp 延迟启动 Shell（到首次显示时，确保项目已加载）
+    void showEvent(QShowEvent *event) override;
+
+private:
+    /// 以 PTY 模式启动 Shell 进程
+    void setupPty();
+
+    /// 设置终端颜色方案（默认深色终端配色）
+    void setupDefaultColors();
+
+    /// Shell 可执行程序路径（构造时保存，显示时延迟启动）
+    QString m_shellPath;
+
+    /// 是否已被强制终止（防止 shutdown 中 showEvent 误重启）
+    bool m_processWasKilled = false;
+
+    Utils::Process *m_process = nullptr;
+
+    /// 强制终止并销毁本终端进程，同时清理 ConPTY 句柄
+    void forceKillProcess();
+
+public:
+    /// 终止所有活跃的终端进程（供插件 aboutToShutdown 调用）
+    static void killAllProcesses();
 };
 
 } // namespace QtSideBarTerminal::Internal
