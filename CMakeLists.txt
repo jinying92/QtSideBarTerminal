@@ -36,6 +36,7 @@ add_qtc_plugin(QtSideBarTerminal
   PLUGIN_DEPENDS
     QtCreator::Core
     QtCreator::ProjectExplorer
+    QtCreator::TextEditor
   DEPENDS
     Qt::Widgets
     QtCreator::ExtensionSystem

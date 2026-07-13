@@ -4,6 +4,7 @@
 #include <utils/environment.h>
 #include <utils/filepath.h>
 #include <utils/terminalhooks.h>
+#include <utils/theme/theme.h>
 
 #include <projectexplorer/project.h>
 #include <projectexplorer/projecttree.h>
@@ -12,10 +13,18 @@
 #include <QClipboard>
 #include <QDateTime>
 #include <QDeadlineTimer>
+#include <QDesktopServices>
 #include <QDir>
+#include <QDirIterator>
 #include <QFile>
 #include <QList>
+#include <QRegularExpression>
 #include <QTextStream>
+#include <QUrl>
+#include <QWheelEvent>
+
+#include <coreplugin/editormanager/editormanager.h>
+#include <utils/link.h>
 
 namespace QtSideBarTerminal::Internal {
 
@@ -45,6 +54,9 @@ SimpleTerminalWidget::SimpleTerminalWidget(QWidget *parent,
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     setupDefaultColors();
+
+    // 终端内容区域四周留 10px 边距
+    setViewportMargins(10, 10, 10, 10);
     // Shell 延迟到 showEvent 启动，确保项目已加载
     logToFile("SimpleTerminalWidget constructor done");
 }
@@ -115,6 +127,22 @@ bool SimpleTerminalWidget::event(QEvent *event)
             pasteFromClipboard();
             return true;
         }
+        // Home / End → 委托 TerminalView 发送给终端
+        if (keyEvent->key() == Qt::Key_Home
+            || keyEvent->key() == Qt::Key_End) {
+            TerminalSolution::TerminalView::keyPressEvent(keyEvent);
+            updateMicroFocus();
+            return true;
+        }
+        // Tab / Shift+Tab → 直接写 PTY（libvterm 对 Shift+Tab 映射不准）
+        if (keyEvent->key() == Qt::Key_Tab) {
+            if (keyEvent->modifiers() & Qt::ShiftModifier)
+                writeToPty(QByteArrayLiteral("\x1b[Z"));  // CSI 反向制表
+            else
+                writeToPty(QByteArrayLiteral("\x09"));    // HT
+            updateMicroFocus();
+            return true;
+        }
         break;
     }
     default:
@@ -124,17 +152,73 @@ bool SimpleTerminalWidget::event(QEvent *event)
 }
 
 /**
- * @brief 鼠标按键（日志右键 selection 状态，用于调试复制）
+ * @brief 鼠标按键（日志右键 selection 状态，左键直接激活链接）
  */
 void SimpleTerminalWidget::mousePressEvent(QMouseEvent *event)
 {
     if (event->button() == Qt::RightButton) {
-        // 确认执行时是否存在选中文本
         const bool hasSel = (selection() != std::nullopt);
-        logToFile(QString("mousePressEvent RIGHT click: hasSelection=%1")
-                      .arg(hasSel));
+        logToFile(QString("mousePressEvent RIGHT click: hasSelection=%1").arg(hasSel));
     }
+
+    // 左键无 Ctrl：直接读取链接文本并激活（避免构造假事件导致崩溃）
+    if (event->button() == Qt::LeftButton && !(event->modifiers() & Qt::ControlModifier)) {
+        const TextAndOffsets hit = textAt(event->pos());
+        if (hit.text.size() > 0) {
+            const QString t = QString::fromUcs4(hit.text.c_str(), hit.text.size()).trimmed();
+            const auto link = toLink(t);
+            if (link) {
+                linkActivated(*link);
+                return;
+            }
+        }
+    }
+
     TerminalSolution::TerminalView::mousePressEvent(event);
+}
+
+/// @reimp 鼠标悬停时始终检测超链接（不依赖 Ctrl 键）
+void SimpleTerminalWidget::mouseMoveEvent(QMouseEvent *event)
+{
+    // 始终检测链接（TerminalView 默认只在 Ctrl 按下时检测）
+    const bool hasLink = checkLinkAt(event->pos());
+
+    if (event->buttons() & Qt::LeftButton) {
+        // 正在选择文本 → 由基类处理选择逻辑
+        TerminalSolution::TerminalView::mouseMoveEvent(event);
+    }
+    // 不调用基类（基类会在无 Ctrl 时清除链接检测结果）
+
+    // 手动设置光标：有链接→手型，否则 IBeam
+    setCursor(hasLink ? Qt::PointingHandCursor : Qt::IBeamCursor);
+}
+
+/// @reimp Ctrl+滚轮缩放字体
+void SimpleTerminalWidget::wheelEvent(QWheelEvent *event)
+{
+    if (event->modifiers() & Qt::ControlModifier) {
+        QFont f = font();
+        int newSize = f.pointSize() + (event->angleDelta().y() > 0 ? 1 : -1);
+        newSize = qBound(6, newSize, 72);
+        f.setPointSize(newSize);
+        setFont(f);
+        applySizeChange();
+        event->accept();
+        return;
+    }
+    TerminalSolution::TerminalView::wheelEvent(event);
+}
+
+/// @reimp 输入法光标位置查询（中文候选字定位）
+QVariant SimpleTerminalWidget::inputMethodQuery(Qt::InputMethodQuery query) const
+{
+    if (query == Qt::ImCursorRectangle) {
+        auto termCursor = surface()->cursor();
+        QPointF pos = gridToGlobal(termCursor.position);
+        QFontMetrics fm(font());
+        return QRect(pos.toPoint(), QSize(fm.averageCharWidth(), fm.height()));
+    }
+    return TerminalSolution::TerminalView::inputMethodQuery(query);
 }
 
 /// @reimp 将选中文本写入系统剪贴板（TerminalView 默认实现为空）
@@ -252,31 +336,44 @@ void SimpleTerminalWidget::setupDefaultColors()
 {
     std::array<QColor, 20> colors;
 
-    // ANSI 0-15: 标准 16 色（与 xterm-256color / Tango Dark 兼容）
-    colors[0]  = QColor("#2e3436");   //  0: Black
-    colors[1]  = QColor("#cc0000");   //  1: Red
-    colors[2]  = QColor("#4e9a06");   //  2: Green
-    colors[3]  = QColor("#c4a000");   //  3: Yellow
-    colors[4]  = QColor("#3465a4");   //  4: Blue
-    colors[5]  = QColor("#75507b");   //  5: Magenta
-    colors[6]  = QColor("#06989a");   //  6: Cyan
-    colors[7]  = QColor("#d3d7cf");   //  7: White
-    colors[8]  = QColor("#555753");   //  8: Bright Black
-    colors[9]  = QColor("#ef2929");   //  9: Bright Red
-    colors[10] = QColor("#8ae234");   // 10: Bright Green
-    colors[11] = QColor("#fce94f");   // 11: Bright Yellow
-    colors[12] = QColor("#729fcf");   // 12: Bright Blue
-    colors[13] = QColor("#ad7fa8");   // 13: Bright Magenta
-    colors[14] = QColor("#34e2e2");   // 14: Bright Cyan
-    colors[15] = QColor("#eeeeec");   // 15: Bright White
+    // 辅助：从 Qt Creator 主题读取颜色，失败用暗色硬编码回退
+    auto themeColor = [](Utils::Theme::Color role, const QColor &fallback) -> QColor {
+        QColor c = Utils::creatorColor(role);
+        return c.isValid() ? c : fallback;
+    };
 
-    // Widget 颜色（Qt Creator 深色主题默认）
-    colors[16] = QColor("#d4d4d4");   // Foreground — 浅灰文字
-    colors[17] = QColor("#1e1e1e");   // Background — 深灰背景
-    colors[18] = QColor("#264f78");   // Selection  — 蓝色选择区
-    colors[19] = QColor("#6c6c6c");   // FindMatch  — 中灰搜索高亮
+    // ANSI 0-15（优先主题，回退 Tango Dark）
+    colors[0]  = themeColor(Utils::Theme::TerminalAnsi0,  QColor("#2e3436"));
+    colors[1]  = themeColor(Utils::Theme::TerminalAnsi1,  QColor("#cc0000"));
+    colors[2]  = themeColor(Utils::Theme::TerminalAnsi2,  QColor("#4e9a06"));
+    colors[3]  = themeColor(Utils::Theme::TerminalAnsi3,  QColor("#c4a000"));
+    colors[4]  = themeColor(Utils::Theme::TerminalAnsi4,  QColor("#3465a4"));
+    colors[5]  = themeColor(Utils::Theme::TerminalAnsi5,  QColor("#75507b"));
+    colors[6]  = themeColor(Utils::Theme::TerminalAnsi6,  QColor("#06989a"));
+    colors[7]  = themeColor(Utils::Theme::TerminalAnsi7,  QColor("#d3d7cf"));
+    colors[8]  = themeColor(Utils::Theme::TerminalAnsi8,  QColor("#555753"));
+    colors[9]  = themeColor(Utils::Theme::TerminalAnsi9,  QColor("#ef2929"));
+    colors[10] = themeColor(Utils::Theme::TerminalAnsi10, QColor("#8ae234"));
+    colors[11] = themeColor(Utils::Theme::TerminalAnsi11, QColor("#fce94f"));
+    colors[12] = themeColor(Utils::Theme::TerminalAnsi12, QColor("#729fcf"));
+    colors[13] = themeColor(Utils::Theme::TerminalAnsi13, QColor("#ad7fa8"));
+    colors[14] = themeColor(Utils::Theme::TerminalAnsi14, QColor("#34e2e2"));
+    colors[15] = themeColor(Utils::Theme::TerminalAnsi15, QColor("#eeeeec"));
+
+    // Widget 颜色（优先主题，回退 Qt Creator 深色主题默认）
+    colors[16] = themeColor(Utils::Theme::TerminalForeground, QColor("#d4d4d4"));
+    colors[17] = themeColor(Utils::Theme::TerminalBackground, QColor("#1e1e1e"));
+    colors[18] = themeColor(Utils::Theme::TerminalSelection,  QColor("#264f78"));
+    colors[19] = themeColor(Utils::Theme::TerminalFindMatch,  QColor("#6c6c6c"));
 
     setColors(colors);
+
+    // 边距填充色：终端背景色 HSL 亮度降低 ~15% 以产生内部边框效果
+    QColor marginBg = colors[17].toHsl();
+    marginBg.setHsl(marginBg.hslHue(), marginBg.hslSaturation(),
+                    qMax(0, marginBg.lightness() - 38));
+    setAutoFillBackground(true);
+    setStyleSheet(QString("background-color: %1;").arg(marginBg.name()));
 }
 
 /**
@@ -309,6 +406,104 @@ bool SimpleTerminalWidget::resizePty(QSize newSize)
     m_process->ptyData()->resize(newSize);
     logToFile(QString("resizePty: resized to %1x%2").arg(newSize.width()).arg(newSize.height()));
     return true;
+}
+
+/// @reimp 将终端文本映射为可点击链接（URL / 文件路径）
+std::optional<SimpleTerminalWidget::Link> SimpleTerminalWidget::toLink(const QString &text)
+{
+    // URL 检测
+    static const QRegularExpression urlRe(
+        R"(^(https?|ftp|file)://[^\s:;,.!?)\]]+)");
+    if (urlRe.match(text).hasMatch())
+        return Link{text, 0, 0};
+
+    // 文件路径检测：支持 line:column 尾缀（如 main.cpp:42:10）
+    // 匹配：<路径>.<扩展名>[:行[:列]]
+    static const QRegularExpression fileRe(
+        R"(^(.+)\.(\w+)(?::(\d+))?(?::(\d+))?$)");
+    auto m = fileRe.match(text);
+    if (m.hasMatch()) {
+        int line = m.captured(3).toInt();
+        int col  = m.captured(4).toInt();
+        return Link{text, line, col};
+    }
+
+    return std::nullopt;
+}
+
+/// @reimp 点击链接后的操作
+void SimpleTerminalWidget::linkActivated(const Link &link)
+{
+    const QString text = link.text;
+
+    // URL → 系统浏览器
+    static const QRegularExpression urlRe(
+        R"(^(https?|ftp|file)://)", QRegularExpression::CaseInsensitiveOption);
+    if (urlRe.match(text).hasMatch()) {
+        QDesktopServices::openUrl(QUrl(text));
+        return;
+    }
+
+    // 从文本中提取裸路径（移除 :行:列 尾缀）
+    // 注意：toLink 返回的 link.targetLine/Column 已设置，但路径字串仍含 ":42:10"
+    QString path = text;
+    int line = 0, col = 0;
+
+    static const QRegularExpression lineColSuffix(R"((.*\.\w+):(\d+)(?::(\d+))?$)");
+    auto m = lineColSuffix.match(text);
+    if (m.hasMatch()) {
+        path = m.captured(1);                  // 裸路径
+        line = m.captured(2).toInt();           // toLink 中解析的行号
+        col  = m.captured(3).toInt();           // toLink 中解析的列号
+    }
+    // fallback: 使用 link 提供的值
+    if (line == 0) line = link.targetLine;
+    if (col  == 0) col  = link.targetColumn;
+
+    const Utils::FilePath fp = Utils::FilePath::fromString(path);
+
+    // 可执行文件：系统打开而非编辑器中打开
+    static const QStringList exeExts = {"exe", "bat", "cmd", "com", "msi"};
+    if (exeExts.contains(fp.suffix(), Qt::CaseInsensitive)) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fp.toFSPathString()));
+        return;
+    }
+
+    // 尝试打开文件路径（支持相对路径 → 拼上项目目录）
+    Utils::FilePath resolved = fp;
+    if (!resolved.exists() && !resolved.isAbsolutePath()) {
+        // 尝试用当前项目目录解析相对路径
+        if (auto *proj = ProjectExplorer::ProjectTree::currentProject()) {
+            resolved = proj->projectDirectory().resolvePath(fp);
+        }
+    }
+    // 如果仍未找到，再尝试 CWD（Shell 启动时也设置了项目目录）
+    if (!resolved.exists())
+        resolved = Utils::FilePath::fromString(
+            QDir::current().absoluteFilePath(path));
+
+    // 仍不存在 → 在项目目录中递归搜索文件名匹配
+    if (!resolved.exists()) {
+        if (auto *proj = ProjectExplorer::ProjectTree::currentProject()) {
+            const QString baseDir = proj->projectDirectory().toFSPathString();
+            const QString fileName = Utils::FilePath::fromString(path).fileName();
+            if (!fileName.isEmpty()) {
+                QDirIterator it(baseDir, QDir::Files, QDirIterator::Subdirectories);
+                while (it.hasNext()) {
+                    it.next();
+                    if (it.fileName().compare(fileName, Qt::CaseInsensitive) == 0) {
+                        resolved = Utils::FilePath::fromString(it.filePath());
+                        break;  // 只取第一个匹配
+                    }
+                }
+            }
+        }
+    }
+
+    if (resolved.exists())
+        Core::EditorManager::openEditorAt(Utils::Link(resolved, line, col));
+    else
+        QDesktopServices::openUrl(QUrl::fromLocalFile(path));
 }
 
 /// 强制终止并销毁本终端进程，释放 ConPTY 句柄
@@ -347,6 +542,17 @@ void SimpleTerminalWidget::killAllProcesses()
     }
     s_activeWidgets.clear();
     logToFile("killAllProcesses: done");
+}
+
+/// 向首个活跃终端发送文本
+void SimpleTerminalWidget::sendToActiveTerminal(const QString &text)
+{
+    for (SimpleTerminalWidget *w : std::as_const(s_activeWidgets)) {
+        if (w) {
+            w->writeToPty(text.toUtf8());
+            return;
+        }
+    }
 }
 
 } // namespace QtSideBarTerminal::Internal

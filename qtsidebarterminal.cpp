@@ -4,6 +4,13 @@
 
 #include <extensionsystem/iplugin.h>
 
+#include <coreplugin/actionmanager/actionmanager.h>
+#include <coreplugin/editormanager/editormanager.h>
+#include <coreplugin/editormanager/ieditor.h>
+
+#include <texteditor/texteditor.h>
+#include <texteditor/texteditorconstants.h>
+
 #include <QCoreApplication>
 #include <QDateTime>
 #include <QDir>
@@ -45,6 +52,29 @@ public:
     void initialize() final
     {
         new TerminalNavigationFactory;
+        registerSendToTerminalAction();
+    }
+
+    /// 注册"发送到终端"到编辑器右键菜单
+    void registerSendToTerminalAction()
+    {
+        const Utils::Id actionId("QtSideBarTerminal.SendToTerminal");
+        Core::ActionBuilder builder(this, actionId);
+        builder.setText(Tr::tr("Send to Terminal"))
+            .setContext(Core::Context(TextEditor::Constants::C_TEXTEDITOR))
+            .addToContainer(Utils::Id(TextEditor::Constants::M_STANDARDCONTEXTMENU))
+            .addOnTriggered(this, [] {
+                auto *editor = Core::EditorManager::currentEditor();
+                if (!editor)
+                    return;
+                // TextEditorWidget 不是 IEditor::widget() 的直接返回结果
+                auto *baseEditor = qobject_cast<TextEditor::BaseTextEditor *>(editor);
+                if (!baseEditor)
+                    return;
+                const QString text = baseEditor->editorWidget()->textCursor().selectedText();
+                if (!text.isEmpty())
+                    SimpleTerminalWidget::sendToActiveTerminal(text);
+            });
     }
 
     /**

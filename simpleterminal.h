@@ -70,11 +70,26 @@ protected:
     /// @reimp 将选中文本写入系统剪贴板
     void setClipboard(const QString &text) override;
 
+    /// @reimp 将终端文本映射为可点击链接（URL/文件路径）
+    std::optional<Link> toLink(const QString &text) override;
+
+    /// @reimp 点击链接后的操作（浏览器打开 URL / Qt Creator 打开文件）
+    void linkActivated(const Link &link) override;
+
     /// @reimp 拦截事件，防止 Qt Creator 全局快捷键吞掉终端按键
     bool event(QEvent *event) override;
 
     /// @reimp 鼠标按键（日志右键 selection 状态，用于调试复制）
     void mousePressEvent(QMouseEvent *event) override;
+
+    /// @reimp 鼠标悬停时始终检测超链接（不依赖 Ctrl 键）
+    void mouseMoveEvent(QMouseEvent *event) override;
+
+    /// @reimp Ctrl+滚轮缩放字体
+    void wheelEvent(QWheelEvent *event) override;
+
+    /// @reimp 输入法光标位置查询（中文候选字定位）
+    QVariant inputMethodQuery(Qt::InputMethodQuery query) const override;
 
 private:
     /// 以 PTY 模式启动 Shell 进程
@@ -97,6 +112,9 @@ private:
 public:
     /// 终止所有活跃的终端进程（供插件 aboutToShutdown 调用）
     static void killAllProcesses();
+
+    /// 向首个活跃终端发送文本（供编辑器右键菜单调用）
+    static void sendToActiveTerminal(const QString &text);
 };
 
 } // namespace QtSideBarTerminal::Internal

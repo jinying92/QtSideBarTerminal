@@ -13,12 +13,17 @@ namespace QtSideBarTerminal::Internal {
 /**
  * @brief 获取要启动的 Shell 路径
  *
- * Windows：优先 PowerShell（Tab 补全支持 PATH 搜索），回退 cmd.exe。
- * PowerShell 的键盘快捷键需要 Core::IContext 配合才能正常工作。
+ * Windows：优先级 PowerShell 7 → Windows PowerShell → cmd.exe。
+ * PowerShell 7 路径：C:\Program Files\PowerShell\7\pwsh.exe
  */
 static QString defaultShellPath()
 {
 #ifdef Q_OS_WIN
+    // PowerShell 7（pwsh.exe）
+    if (QFileInfo::exists(
+            QStringLiteral("C:/Program Files/PowerShell/7/pwsh.exe")))
+        return QStringLiteral("pwsh.exe");
+    // Windows PowerShell（powershell.exe）
     if (QFileInfo::exists(
             QStringLiteral("C:/Windows/System32/WindowsPowerShell/v1.0/powershell.exe")))
         return QStringLiteral("powershell.exe");

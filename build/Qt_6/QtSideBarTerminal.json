@@ -12,6 +12,7 @@
     "DocumentationUrl" : "",
     "Dependencies" : [
         { "Id" : "core", "Version" : "19.0.2" },
-        { "Id" : "projectexplorer", "Version" : "19.0.2" }
+        { "Id" : "projectexplorer", "Version" : "19.0.2" },
+        { "Id" : "texteditor", "Version" : "19.0.2" }
     ]
 }
