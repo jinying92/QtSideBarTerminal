@@ -417,15 +417,15 @@ std::optional<SimpleTerminalWidget::Link> SimpleTerminalWidget::toLink(const QSt
     if (urlRe.match(text).hasMatch())
         return Link{text, 0, 0};
 
-    // 文件路径检测：支持 line:column 尾缀（如 main.cpp:42:10）
-    // 匹配：<路径>.<扩展名>[:行[:列]]
+    // 文件路径检测：支持 line:column（如 main.cpp:42:10）
+    //              和 line 区间（如 main.cpp:42-91）→ 只取首行
+    // 匹配：<路径>.<扩展名>[:行[:列 | -结束行]]
     static const QRegularExpression fileRe(
-        R"(^(.+)\.(\w+)(?::(\d+))?(?::(\d+))?$)");
+        R"(^(.+)\.(\w+):(\d+)(?:[:,-](\d+))?$)");
     auto m = fileRe.match(text);
     if (m.hasMatch()) {
         int line = m.captured(3).toInt();
-        int col  = m.captured(4).toInt();
-        return Link{text, line, col};
+        return Link{text, line, 0};
     }
 
     return std::nullopt;
@@ -446,10 +446,11 @@ void SimpleTerminalWidget::linkActivated(const Link &link)
 
     // 从文本中提取裸路径（移除 :行:列 尾缀）
     // 注意：toLink 返回的 link.targetLine/Column 已设置，但路径字串仍含 ":42:10"
+    // 正则同时支持 :<行>:<列> 和 :<行>-<结束行> 格式
     QString path = text;
     int line = 0, col = 0;
 
-    static const QRegularExpression lineColSuffix(R"((.*\.\w+):(\d+)(?::(\d+))?$)");
+    static const QRegularExpression lineColSuffix(R"((.*\.\w+):(\d+)(?::(\d+))?(?:-(\d+))?$)");
     auto m = lineColSuffix.match(text);
     if (m.hasMatch()) {
         path = m.captured(1);                  // 裸路径
